@@ -1,0 +1,146 @@
+[
+  {
+    "id": "STU001",
+    "name": "Aarav Sharma",
+    "branch": "CSE",
+    "cgpa": 8.7,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.95 },
+      { "name": "SQL", "level": 0.88 },
+      { "name": "FastAPI", "level": 0.90 },
+      { "name": "PostgreSQL", "level": 0.85 },
+      { "name": "Docker", "level": 0.75 },
+      { "name": "REST API", "level": 0.92 }
+    ],
+    "projects": [
+      {
+        "title": "Campus Placement Matching Engine",
+        "description": "Built an intelligent matching system for college recruitment using FastAPI, vector embeddings, and PostgreSQL.",
+        "technologies": ["Python", "FastAPI", "PostgreSQL", "Docker"]
+      },
+      {
+        "title": "Distributed Task Queue",
+        "description": "Engineered an asynchronous task worker queue using Redis and Celery for handling background batch processing.",
+        "technologies": ["Python", "Redis", "Celery"]
+      }
+    ],
+    "certifications": [
+      { "title": "AWS Certified Cloud Practitioner", "issuer": "Amazon Web Services", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 88,
+      "technical": 94,
+      "communication": 82
+    }
+  },
+  {
+    "id": "STU002",
+    "name": "Priya Nair",
+    "branch": "IT",
+    "cgpa": 8.1,
+    "backlogs": 0,
+    "skills": [
+      { "name": "React", "level": 0.92 },
+      { "name": "TypeScript", "level": 0.88 },
+      { "name": "Node.js", "level": 0.80 },
+      { "name": "CSS", "level": 0.90 },
+      { "name": "Tailwind CSS", "level": 0.85 },
+      { "name": "REST API", "level": 0.78 }
+    ],
+    "projects": [
+      {
+        "title": "Interactive Analytics Dashboard",
+        "description": "Designed a real-time analytics portal in React and TypeScript with responsive charts and filters.",
+        "technologies": ["React", "TypeScript", "Tailwind CSS"]
+      }
+    ],
+    "certifications": [
+      { "title": "Meta Frontend Developer Professional Certificate", "issuer": "Coursera", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 82,
+      "technical": 86,
+      "communication": 89
+    }
+  },
+  {
+    "id": "STU003",
+    "name": "Rohan Gupta",
+    "branch": "ECE",
+    "cgpa": 6.8,
+    "backlogs": 1,
+    "skills": [
+      { "name": "C++", "level": 0.80 },
+      { "name": "Python", "level": 0.70 },
+      { "name": "Embedded Systems", "level": 0.85 }
+    ],
+    "projects": [
+      {
+        "title": "IoT Smart Agriculture Node",
+        "description": "Sensors reading soil humidity and transmitting telemetry over MQTT via ESP32 microcontrollers.",
+        "technologies": ["C++", "IoT", "MQTT"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 70,
+      "technical": 72,
+      "communication": 68
+    }
+  },
+  {
+    "id": "STU004",
+    "name": "Ananya Sen",
+    "branch": "CSE",
+    "cgpa": 9.2,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.92 },
+      { "name": "PyTorch", "level": 0.88 },
+      { "name": "Machine Learning", "level": 0.90 },
+      { "name": "SQL", "level": 0.82 },
+      { "name": "REST API", "level": 0.80 }
+    ],
+    "projects": [
+      {
+        "title": "Resume Keyword & Semantic Parser",
+        "description": "Extracted unstructured PDF resume entities and mapped candidates using NLP transformers.",
+        "technologies": ["Python", "PyTorch", "Transformers", "FastAPI"]
+      }
+    ],
+    "certifications": [
+      { "title": "Deep Learning Specialization", "issuer": "DeepLearning.AI", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 94,
+      "technical": 96,
+      "communication": 88
+    }
+  },
+  {
+    "id": "STU005",
+    "name": "Karan Patel",
+    "branch": "MECH",
+    "cgpa": 7.4,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.65 },
+      { "name": "AutoCAD", "level": 0.90 },
+      { "name": "SolidWorks", "level": 0.85 }
+    ],
+    "projects": [
+      {
+        "title": "Robotic Arm Kinematics Simulation",
+        "description": "CAD design and Python forward kinematics simulation for 4-axis industrial robotic manipulator.",
+        "technologies": ["Python", "SolidWorks"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 76,
+      "technical": 68,
+      "communication": 74
+    }
+  }
+]

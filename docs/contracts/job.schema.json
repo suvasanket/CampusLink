@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JobRequirements",
+  "type": "object",
+  "required": [
+    "id",
+    "company",
+    "title",
+    "minimum_cgpa",
+    "eligible_branches",
+    "max_backlogs",
+    "required_skills"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique job posting identifier (e.g., JOB001)"
+    },
+    "company": {
+      "type": "string",
+      "description": "Hiring organization name"
+    },
+    "title": {
+      "type": "string",
+      "description": "Job designation or role title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full job description text or summary"
+    },
+    "minimum_cgpa": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 10.0,
+      "description": "Cutoff CGPA for hard eligibility"
+    },
+    "eligible_branches": {
+      "type": "array",
+      "description": "Permitted student branches (e.g. ['CSE', 'IT'])",
+      "items": { "type": "string" }
+    },
+    "max_backlogs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum tolerated active backlogs"
+    },
+    "required_skills": {
+      "type": "array",
+      "description": "Mandatory technical and professional skills",
+      "items": { "type": "string" }
+    },
+    "preferred_skills": {
+      "type": "array",
+      "description": "Desirable or bonus skills",
+      "items": { "type": "string" }
+    },
+    "experience_level": {
+      "type": "string",
+      "description": "Target experience tier (e.g. Fresher / Entry-Level)"
+    }
+  }
+}

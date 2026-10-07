@@ -1,0 +1,38 @@
+[
+  {
+    "id": "JOB001",
+    "company": "Nexus Innovations",
+    "title": "Backend Software Engineer",
+    "description": "Looking for entry-level backend engineers experienced in building asynchronous REST APIs with Python, relational database modeling with PostgreSQL, and microservice deployment with Docker.",
+    "minimum_cgpa": 7.5,
+    "eligible_branches": ["CSE", "IT"],
+    "max_backlogs": 0,
+    "required_skills": ["Python", "SQL", "REST API"],
+    "preferred_skills": ["FastAPI", "PostgreSQL", "Docker"],
+    "experience_level": "Fresher"
+  },
+  {
+    "id": "JOB002",
+    "company": "Frontier Cloud Systems",
+    "title": "Frontend UI Developer",
+    "description": "Seeking modern web developers passionate about building responsive user experiences using React, TypeScript, and modern CSS frameworks.",
+    "minimum_cgpa": 7.0,
+    "eligible_branches": ["CSE", "IT", "ECE"],
+    "max_backlogs": 0,
+    "required_skills": ["React", "TypeScript", "REST API"],
+    "preferred_skills": ["Tailwind CSS", "Next.js", "Redux"],
+    "experience_level": "Fresher"
+  },
+  {
+    "id": "JOB003",
+    "company": "Cognitive AI Labs",
+    "title": "Machine Learning Associate",
+    "description": "Seeking graduates with strong analytical foundations in Python, PyTorch, data preprocessing, and semantic search/vector databases.",
+    "minimum_cgpa": 8.0,
+    "eligible_branches": ["CSE", "IT"],
+    "max_backlogs": 0,
+    "required_skills": ["Python", "Machine Learning", "PyTorch"],
+    "preferred_skills": ["SQL", "FastAPI", "Transformers"],
+    "experience_level": "Fresher"
+  }
+]

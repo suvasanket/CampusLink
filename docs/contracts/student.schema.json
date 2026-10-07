@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StudentProfile",
+  "type": "object",
+  "required": ["id", "name", "branch", "cgpa", "backlogs", "skills", "projects", "assessment"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique student identifier (e.g., STU001)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Full student name"
+    },
+    "branch": {
+      "type": "string",
+      "description": "Engineering branch or discipline (e.g., CSE, IT, ECE, MECH)"
+    },
+    "cgpa": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 10.0,
+      "description": "Cumulative Grade Point Average on a 10.0 scale"
+    },
+    "backlogs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of active backlogs"
+    },
+    "skills": {
+      "type": "array",
+      "description": "List of student technical and soft skills with proficiency level",
+      "items": {
+        "type": "object",
+        "required": ["name", "level"],
+        "properties": {
+          "name": { "type": "string" },
+          "level": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+        }
+      }
+    },
+    "projects": {
+      "type": "array",
+      "description": "Portfolio projects demonstrating applied skills",
+      "items": {
+        "type": "object",
+        "required": ["title", "description", "technologies"],
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "technologies": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "certifications": {
+      "type": "array",
+      "description": "Verified certifications and courses completed",
+      "items": {
+        "type": "object",
+        "required": ["title", "issuer"],
+        "properties": {
+          "title": { "type": "string" },
+          "issuer": { "type": "string" },
+          "year": { "type": "integer" }
+        }
+      }
+    },
+    "assessment": {
+      "type": "object",
+      "description": "Standardized campus placement assessment scores (0-100 scale)",
+      "required": ["aptitude", "technical", "communication"],
+      "properties": {
+        "aptitude": { "type": "number", "minimum": 0, "maximum": 100 },
+        "technical": { "type": "number", "minimum": 0, "maximum": 100 },
+        "communication": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}
