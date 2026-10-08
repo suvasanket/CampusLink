@@ -1,0 +1,24 @@
+Title: Associate AI/ML Research Engineer — Azure AI
+Company: Microsoft
+Location: Hyderabad / Bengaluru
+Experience Level: Fresher (Campus Placement 2027)
+
+About the Role:
+The Azure AI team at Microsoft is hiring high-potential campus graduates to work on frontier artificial intelligence systems, foundation model fine-tuning, and scalable machine learning evaluation pipelines.
+
+Key Responsibilities:
+- Implement and experiment with deep learning architectures using PyTorch and HuggingFace Transformers.
+- Design data pre-processing, tokenization, and embedding pipelines for large multimodal corpora.
+- Optimize inference throughput and model latency on GPU clusters.
+- Collaborate with applied researchers to evaluate model hallucination and fairness metrics.
+
+Minimum Qualifications:
+- B.Tech / B.E. in Computer Science (CSE) or Information Technology (IT), graduating class of 2027.
+- Minimum CGPA: 8.0 / 10.0 with 0 active backlogs.
+- Strong mathematical foundations in Linear Algebra, Probability, and Optimization.
+- Proficiency in Python, PyTorch, Machine Learning, and standard scientific libraries (NumPy, SciPy).
+
+Preferred Qualifications:
+- Demonstrated experience training or fine-tuning Large Language Models (LLMs) or Vision Transformers.
+- Familiarity with Vector Databases (pgvector, FAISS, Milvus) and retrieval-augmented generation (RAG).
+- Research papers published in tier-1 conferences or top-ranking Kaggle competitions.

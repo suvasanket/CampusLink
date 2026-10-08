@@ -1,0 +1,32 @@
+RAHUL SHARMA
+Email: rahul.sharma@example.edu | Phone: +91-98765-43210
+B.Tech in Computer Science and Engineering (2023 - 2027)
+National Institute of Technology
+CGPA: 8.85 / 10.0 | Active Backlogs: 0
+
+TECHNICAL SKILLS
+- Languages: Python, Go, SQL, C++, Bash
+- Frameworks & Libraries: FastAPI, Django, SQLAlchemy, PyTest
+- Databases & Systems: PostgreSQL, Redis, MongoDB, Linux System Architecture
+- Tools & Cloud: Docker, Git, GitHub Actions, AWS EC2, Postman
+
+PROJECTS
+1. Distributed Task Queue & Event Pipeline
+   - Developed an asynchronous background worker engine handling 5,000 requests/sec with Redis streams.
+   - Built resilient exponential backoff retry mechanisms and dead-letter queues.
+   - Stack: Python, FastAPI, Redis, Docker, PostgreSQL
+
+2. Campus Placement Matching Service
+   - Designed high-throughput microservices for matching student skills to employer requirements.
+   - Reduced query latency by 45% through indexed PostgreSQL queries and materialized views.
+   - Stack: Python, SQLAlchemy, REST APIs, PyTest
+
+CERTIFICATIONS & ACHEIVEMENTS
+- AWS Certified Cloud Practitioner (2024)
+- Knight on LeetCode (Rating 1940+, 600+ problems solved)
+- Finalist, Smart India Hackathon 2024
+
+ASSESSMENTS
+- Aptitude: 88%
+- Technical Coding: 92%
+- Communication: 84%

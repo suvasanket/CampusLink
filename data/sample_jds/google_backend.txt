@@ -1,0 +1,24 @@
+Title: Backend Software Engineer — Google Cloud
+Company: Google
+Location: Bangalore / Hyderabad
+Experience Level: Fresher (Campus Placement 2027)
+
+About the Role:
+As a Software Engineer on the Google Cloud Infrastructure team, you will design, build, and optimize large-scale distributed backend systems that power mission-critical services for millions of enterprises worldwide. You will collaborate closely with product management and site reliability teams to deliver high-availability, fault-tolerant microservices.
+
+Key Responsibilities:
+- Design, implement, and maintain scalable REST and gRPC microservices in Python and Go.
+- Build reliable database schemas and optimize SQL queries using PostgreSQL and Spanner.
+- Collaborate on asynchronous message processing architectures and caching strategies.
+- Participate in code reviews, design documentation, and automated CI/CD pipeline deployments.
+
+Minimum Qualifications:
+- Pursuing B.Tech / B.E. in Computer Science (CSE) or Information Technology (IT), graduating in 2027.
+- Minimum CGPA: 7.5 / 10.0 with 0 active backlogs.
+- Strong fundamentals in Data Structures, Algorithms, Object-Oriented Design, and System Architecture.
+- Proficiency in Python, SQL, REST APIs, and Linux fundamentals.
+
+Preferred Qualifications:
+- Hands-on experience with Docker, Kubernetes, Redis, or cloud platforms (GCP / AWS).
+- Prior internship experience or production deployment of a full-stack or backend web service.
+- Contributions to open-source software or competitive programming achievements.

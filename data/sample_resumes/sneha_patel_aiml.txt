@@ -1,0 +1,32 @@
+SNEHA PATEL
+Email: sneha.patel@example.edu | Portfolio: github.com/snehapatel-ai
+B.Tech in Computer Science and Engineering (Data Science Specialization, 2023 - 2027)
+Indian Institute of Information Technology
+CGPA: 9.15 / 10.0 | Active Backlogs: 0
+
+TECHNICAL SKILLS
+- Machine Learning & Deep Learning: PyTorch, TensorFlow, Scikit-learn, Transformers, HuggingFace
+- Data Science & Analytics: Python, NumPy, Pandas, Matplotlib, SQL
+- NLP & Computer Vision: BERT, LLaMA Fine-tuning, LoRA, OpenCV, Vector Search (FAISS)
+- Infrastructure: Linux, Docker, Git, MLflow
+
+PROJECTS
+1. Medical Diagnostic Visual Question Answering
+   - Fine-tuned Vision-Language models on chest X-ray datasets using PyTorch and LoRA parameter-efficient tuning.
+   - Attained 87.4% validation accuracy with low inference latency on single Nvidia T4 GPU.
+   - Stack: Python, PyTorch, Transformers, HuggingFace
+
+2. Semantic Academic Paper Search Engine
+   - Built a vector similarity search engine over 50,000 arXiv research papers using SentenceTransformers and pgvector.
+   - Implemented reciprocal rank fusion (RRF) for hybrid keyword and embedding retrieval.
+   - Stack: Python, SentenceTransformers, PostgreSQL, FastAPI
+
+PUBLICATIONS & AWARDS
+- Published paper: "Optimized Retrieval for Healthcare QA" at IEEE Student Symposium 2024
+- 1st Place, National AI Hackathon 2024
+- Global Top 5% on Kaggle NLP competitions
+
+ASSESSMENTS
+- Aptitude: 91%
+- Technical: 95%
+- Communication: 89%

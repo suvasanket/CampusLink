@@ -1,0 +1,31 @@
+ARJUN VERMA
+Email: arjun.verma@example.edu | Website: arjunverma.dev
+B.Tech in Information Technology (2023 - 2027)
+Vellore Institute of Technology
+CGPA: 8.10 / 10.0 | Active Backlogs: 0
+
+TECHNICAL SKILLS
+- Frontend Core: React, TypeScript, JavaScript (ES6+), HTML5, CSS3/SCSS
+- Frameworks & Libraries: Next.js, Tailwind CSS, Redux Toolkit, Zustand, Framer Motion
+- Backend & Tooling: Node.js, Express, REST APIs, GraphQL, Vite, Webpack, Jest
+- DevOps & Cloud: Vercel, Netlify, Docker basics, Git, GitHub Actions
+
+PROJECTS
+1. E-Commerce Merchant Dashboard
+   - Built a high-performance web analytics application serving real-time order notifications with WebSockets.
+   - Reduced First Contentful Paint by 60% through code splitting and image optimization in Next.js.
+   - Stack: React, Next.js, TypeScript, Tailwind CSS, Zustand
+
+2. Interactive Code Collaboration Workspace
+   - Developed a multi-user collaborative browser IDE using Monaco Editor and CRDTs for conflict-free editing.
+   - Deployed on Vercel with responsive UI for mobile, tablet, and desktop screens.
+   - Stack: TypeScript, React, Tailwind CSS, Node.js
+
+EXPERIENCE
+- Frontend Engineering Intern at WebCraft Labs (May 2024 - July 2024)
+  - Built 14 reusable design system components following WCAG 2.1 AA accessibility guidelines.
+
+ASSESSMENTS
+- Aptitude: 82%
+- Technical: 87%
+- Communication: 85%

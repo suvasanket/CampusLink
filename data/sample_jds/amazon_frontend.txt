@@ -1,0 +1,24 @@
+Title: Front-End Software Development Engineer — AWS Console
+Company: Amazon
+Location: Bangalore / Chennai
+Experience Level: Fresher (Campus Placement 2027)
+
+About the Role:
+Amazon Web Services is seeking customer-obsessed Front-End Engineers to craft ultra-responsive, accessible, and intuitive user experiences for AWS Cloud Management Console products used by millions of developers globally.
+
+Key Responsibilities:
+- Build high-performance, responsive single-page web applications using React, TypeScript, and modern CSS.
+- Translate UX wireframes and interactive prototypes into modular, accessible, reusable UI components.
+- Optimize web vitals, bundle size, and browser rendering pipelines.
+- Integrate securely with AWS backend microservices via REST and GraphQL APIs.
+
+Minimum Qualifications:
+- B.Tech / B.E. in CSE, IT, or ECE graduating in 2027.
+- Minimum CGPA: 7.0 / 10.0 with 0 active backlogs.
+- Strong proficiency in JavaScript (ES6+), TypeScript, React, HTML5, and CSS3.
+- Understanding of web security (CORS, XSS, CSRF) and asynchronous event-driven state management.
+
+Preferred Qualifications:
+- Experience with Next.js, Tailwind CSS, Redux Toolkit, or React Query.
+- Knowledge of browser performance profiling and automated end-to-end testing (Playwright / Cypress).
+- Experience hosting or deploying web applications on AWS (S3, CloudFront).
