@@ -3,6 +3,7 @@
     "id": "STU001",
     "name": "Aarav Sharma",
     "branch": "CSE",
+    "graduation_year": 2027,
     "cgpa": 8.7,
     "backlogs": 0,
     "skills": [
@@ -38,6 +39,7 @@
     "id": "STU002",
     "name": "Priya Nair",
     "branch": "IT",
+    "graduation_year": 2027,
     "cgpa": 8.1,
     "backlogs": 0,
     "skills": [
@@ -68,12 +70,14 @@
     "id": "STU003",
     "name": "Rohan Gupta",
     "branch": "ECE",
+    "graduation_year": 2027,
     "cgpa": 6.8,
     "backlogs": 1,
     "skills": [
       { "name": "C++", "level": 0.80 },
       { "name": "Python", "level": 0.70 },
-      { "name": "Embedded Systems", "level": 0.85 }
+      { "name": "Embedded Systems", "level": 0.85 },
+      { "name": "IoT", "level": 0.75 }
     ],
     "projects": [
       {
@@ -93,6 +97,7 @@
     "id": "STU004",
     "name": "Ananya Sen",
     "branch": "CSE",
+    "graduation_year": 2027,
     "cgpa": 9.2,
     "backlogs": 0,
     "skills": [
@@ -122,6 +127,7 @@
     "id": "STU005",
     "name": "Karan Patel",
     "branch": "MECH",
+    "graduation_year": 2027,
     "cgpa": 7.4,
     "backlogs": 0,
     "skills": [
@@ -141,6 +147,776 @@
       "aptitude": 76,
       "technical": 68,
       "communication": 74
+    }
+  },
+  {
+    "id": "STU006",
+    "name": "Vikram Adithya",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 8.5,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Linux", "level": 0.92 },
+      { "name": "Docker", "level": 0.88 },
+      { "name": "Kubernetes", "level": 0.82 },
+      { "name": "Python", "level": 0.80 },
+      { "name": "AWS", "level": 0.78 }
+    ],
+    "projects": [
+      {
+        "title": "Multi-Region Kubernetes Deployer",
+        "description": "Automated deployment of microservices across clusters with Prometheus telemetry and Grafana dashboards.",
+        "technologies": ["Kubernetes", "Docker", "Linux", "Python"]
+      }
+    ],
+    "certifications": [
+      { "title": "Certified Kubernetes Application Developer (CKAD)", "issuer": "Linux Foundation", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 84,
+      "technical": 90,
+      "communication": 80
+    }
+  },
+  {
+    "id": "STU007",
+    "name": "Sneha Kulkarni",
+    "branch": "IT",
+    "graduation_year": 2027,
+    "cgpa": 8.8,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.90 },
+      { "name": "React", "level": 0.88 },
+      { "name": "SQL", "level": 0.86 },
+      { "name": "PostgreSQL", "level": 0.84 },
+      { "name": "REST API", "level": 0.88 }
+    ],
+    "projects": [
+      {
+        "title": "Fintech Micro-Lending Portal",
+        "description": "Full-stack credit evaluation portal with React UI and FastAPI ledger engine backed by PostgreSQL.",
+        "technologies": ["Python", "React", "PostgreSQL", "REST API"]
+      }
+    ],
+    "certifications": [
+      { "title": "AWS Certified Solutions Architect - Associate", "issuer": "Amazon Web Services", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 89,
+      "technical": 91,
+      "communication": 86
+    }
+  },
+  {
+    "id": "STU008",
+    "name": "Aditya Verma",
+    "branch": "ECE",
+    "graduation_year": 2027,
+    "cgpa": 7.9,
+    "backlogs": 0,
+    "skills": [
+      { "name": "C++", "level": 0.88 },
+      { "name": "Embedded Systems", "level": 0.86 },
+      { "name": "IoT", "level": 0.82 },
+      { "name": "RTOS", "level": 0.78 },
+      { "name": "Python", "level": 0.72 }
+    ],
+    "projects": [
+      {
+        "title": "Autonomous Drone Flight Controller",
+        "description": "Real-time FreeRTOS firmware running PID flight stabilization loop on STM32 microcontrollers.",
+        "technologies": ["C++", "RTOS", "Embedded Systems"]
+      }
+    ],
+    "certifications": [
+      { "title": "Embedded Systems Architecture", "issuer": "Coursera", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 81,
+      "technical": 85,
+      "communication": 78
+    }
+  },
+  {
+    "id": "STU009",
+    "name": "Divya Krishnan",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 9.5,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Java", "level": 0.90 },
+      { "name": "Python", "level": 0.75 },
+      { "name": "SQL", "level": 0.80 },
+      { "name": "Data Structures", "level": 0.95 }
+    ],
+    "projects": [
+      {
+        "title": "B-Tree Database Indexer",
+        "description": "Implemented disk-based B+ tree indexing engine in pure Java with concurrency locks.",
+        "technologies": ["Java", "Data Structures"]
+      }
+    ],
+    "certifications": [
+      { "title": "Oracle Certified Professional: Java SE 17", "issuer": "Oracle", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 98,
+      "technical": 92,
+      "communication": 85
+    }
+  },
+  {
+    "id": "STU010",
+    "name": "Manish Rao",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 6.9,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.92 },
+      { "name": "SQL", "level": 0.84 },
+      { "name": "Docker", "level": 0.80 },
+      { "name": "FastAPI", "level": 0.88 },
+      { "name": "REST API", "level": 0.86 }
+    ],
+    "projects": [
+      {
+        "title": "High-Throughput Web Scraper",
+        "description": "Asynchronous scraping cluster with Playwright, FastAPI, and Redis processing 100K URLs daily.",
+        "technologies": ["Python", "FastAPI", "Docker", "Redis"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 78,
+      "technical": 88,
+      "communication": 72
+    }
+  },
+  {
+    "id": "STU011",
+    "name": "Meera Joshi",
+    "branch": "IT",
+    "graduation_year": 2027,
+    "cgpa": 8.3,
+    "backlogs": 0,
+    "skills": [
+      { "name": "React", "level": 0.90 },
+      { "name": "Next.js", "level": 0.85 },
+      { "name": "TypeScript", "level": 0.86 },
+      { "name": "Tailwind CSS", "level": 0.92 },
+      { "name": "REST API", "level": 0.80 }
+    ],
+    "projects": [
+      {
+        "title": "Hospital Patient Portal",
+        "description": "Responsive patient appointment booking portal in Next.js with accessible forms and Tailwind styling.",
+        "technologies": ["Next.js", "React", "TypeScript", "Tailwind CSS"]
+      }
+    ],
+    "certifications": [
+      { "title": "Frontend Developer Specialist", "issuer": "freeCodeCamp", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 84,
+      "technical": 87,
+      "communication": 90
+    }
+  },
+  {
+    "id": "STU012",
+    "name": "Abhishek Nair",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 7.6,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.88 },
+      { "name": "SQL", "level": 0.86 },
+      { "name": "REST API", "level": 0.84 },
+      { "name": "PostgreSQL", "level": 0.80 }
+    ],
+    "projects": [
+      {
+        "title": "E-Commerce Order Management API",
+        "description": "RESTful microservice handling order idempotency, inventory decrement, and PostgreSQL transactions.",
+        "technologies": ["Python", "PostgreSQL", "REST API"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 80,
+      "technical": 82,
+      "communication": 76
+    }
+  },
+  {
+    "id": "STU013",
+    "name": "Tanvi Agarwal",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 9.0,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.94 },
+      { "name": "Machine Learning", "level": 0.92 },
+      { "name": "PyTorch", "level": 0.86 },
+      { "name": "SQL", "level": 0.84 },
+      { "name": "Transformers", "level": 0.82 }
+    ],
+    "projects": [
+      {
+        "title": "Clinical Text Summarizer",
+        "description": "Fine-tuned BioBERT model to extract clinical diagnoses and summarize electronic health records.",
+        "technologies": ["Python", "PyTorch", "Transformers", "Machine Learning"]
+      }
+    ],
+    "certifications": [
+      { "title": "Machine Learning Engineer Nanodegree", "issuer": "Udacity", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 92,
+      "technical": 95,
+      "communication": 89
+    }
+  },
+  {
+    "id": "STU014",
+    "name": "Siddharth Roy",
+    "branch": "ECE",
+    "graduation_year": 2027,
+    "cgpa": 7.3,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.82 },
+      { "name": "Linux", "level": 0.85 },
+      { "name": "Docker", "level": 0.78 },
+      { "name": "C++", "level": 0.75 }
+    ],
+    "projects": [
+      {
+        "title": "Edge Gateway IoT Aggregator",
+        "description": "Dockerized Python daemon collecting BLE beacon telemetry and syncing to cloud broker.",
+        "technologies": ["Python", "Docker", "Linux", "IoT"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 77,
+      "technical": 80,
+      "communication": 74
+    }
+  },
+  {
+    "id": "STU015",
+    "name": "Nidhi Bhat",
+    "branch": "IT",
+    "graduation_year": 2027,
+    "cgpa": 8.6,
+    "backlogs": 0,
+    "skills": [
+      { "name": "React", "level": 0.88 },
+      { "name": "TypeScript", "level": 0.85 },
+      { "name": "Redux", "level": 0.82 },
+      { "name": "REST API", "level": 0.84 },
+      { "name": "Tailwind CSS", "level": 0.86 }
+    ],
+    "projects": [
+      {
+        "title": "Stock Portfolio Tracker",
+        "description": "Single-page application tracking stock quotes via WebSockets with Redux Toolkit state management.",
+        "technologies": ["React", "TypeScript", "Redux", "Tailwind CSS"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 86,
+      "technical": 88,
+      "communication": 91
+    }
+  },
+  {
+    "id": "STU016",
+    "name": "Arjun Menon",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 7.8,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.85 },
+      { "name": "SQL", "level": 0.80 },
+      { "name": "REST API", "level": 0.82 },
+      { "name": "Docker", "level": 0.75 }
+    ],
+    "projects": [
+      {
+        "title": "Ticketing System API",
+        "description": "Backend CRUD REST service for support tickets with user authentication and role management.",
+        "technologies": ["Python", "SQL", "REST API"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 81,
+      "technical": 83,
+      "communication": 79
+    }
+  },
+  {
+    "id": "STU017",
+    "name": "Kavya Reddy",
+    "branch": "EEE",
+    "graduation_year": 2027,
+    "cgpa": 7.5,
+    "backlogs": 0,
+    "skills": [
+      { "name": "C++", "level": 0.82 },
+      { "name": "Embedded Systems", "level": 0.84 },
+      { "name": "IoT", "level": 0.80 },
+      { "name": "MATLAB", "level": 0.75 }
+    ],
+    "projects": [
+      {
+        "title": "Smart Solar Inverter Controller",
+        "description": "Microcontroller firmware implementing MPPT tracking and sending efficiency statistics over WiFi.",
+        "technologies": ["C++", "Embedded Systems", "IoT"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 79,
+      "technical": 82,
+      "communication": 80
+    }
+  },
+  {
+    "id": "STU018",
+    "name": "Gaurav Singhal",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 8.2,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Linux", "level": 0.88 },
+      { "name": "Docker", "level": 0.85 },
+      { "name": "Python", "level": 0.82 },
+      { "name": "CI/CD", "level": 0.80 },
+      { "name": "AWS", "level": 0.75 }
+    ],
+    "projects": [
+      {
+        "title": "Automated GitHub Actions CI/CD Pipeline",
+        "description": "End-to-end continuous integration pipeline running pytest, linting, Docker build, and AWS ECS deployment.",
+        "technologies": ["Docker", "Linux", "CI/CD", "AWS"]
+      }
+    ],
+    "certifications": [
+      { "title": "AWS Certified Cloud Practitioner", "issuer": "Amazon Web Services", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 85,
+      "technical": 86,
+      "communication": 78
+    }
+  },
+  {
+    "id": "STU019",
+    "name": "Ishita Saxena",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 9.1,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.90 },
+      { "name": "React", "level": 0.88 },
+      { "name": "SQL", "level": 0.88 },
+      { "name": "PostgreSQL", "level": 0.86 },
+      { "name": "TypeScript", "level": 0.82 },
+      { "name": "REST API", "level": 0.90 }
+    ],
+    "projects": [
+      {
+        "title": "B2B SaaS Invoicing Platform",
+        "description": "Multi-tenant invoicing platform with React frontend, Python FastAPI backend, and Stripe webhook integration.",
+        "technologies": ["Python", "React", "PostgreSQL", "TypeScript"]
+      }
+    ],
+    "certifications": [
+      { "title": "Full Stack Open Certification", "issuer": "University of Helsinki", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 93,
+      "technical": 94,
+      "communication": 88
+    }
+  },
+  {
+    "id": "STU020",
+    "name": "Pranav Deshmukh",
+    "branch": "MECH",
+    "graduation_year": 2027,
+    "cgpa": 6.7,
+    "backlogs": 2,
+    "skills": [
+      { "name": "AutoCAD", "level": 0.85 },
+      { "name": "SolidWorks", "level": 0.80 },
+      { "name": "Python", "level": 0.50 }
+    ],
+    "projects": [
+      {
+        "title": "Automotive Gearbox Thermal Analysis",
+        "description": "Thermal dissipation finite-element analysis of helical gear systems using SolidWorks Simulation.",
+        "technologies": ["SolidWorks", "AutoCAD"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 65,
+      "technical": 66,
+      "communication": 70
+    }
+  },
+  {
+    "id": "STU021",
+    "name": "Aniket Ghosh",
+    "branch": "IT",
+    "graduation_year": 2027,
+    "cgpa": 7.7,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.84 },
+      { "name": "SQL", "level": 0.82 },
+      { "name": "REST API", "level": 0.80 },
+      { "name": "FastAPI", "level": 0.78 }
+    ],
+    "projects": [
+      {
+        "title": "Weather Telemetry API",
+        "description": "REST service gathering meteorological data from open APIs and caching hourly forecasts in SQLite.",
+        "technologies": ["Python", "FastAPI", "REST API"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 81,
+      "technical": 80,
+      "communication": 82
+    }
+  },
+  {
+    "id": "STU022",
+    "name": "Swati Tiwari",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 8.9,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.92 },
+      { "name": "Machine Learning", "level": 0.88 },
+      { "name": "PyTorch", "level": 0.85 },
+      { "name": "SQL", "level": 0.82 }
+    ],
+    "projects": [
+      {
+        "title": "Fraud Detection Neural Network",
+        "description": "Classified fraudulent transactions using ensemble random forests and PyTorch feedforward networks.",
+        "technologies": ["Python", "PyTorch", "Machine Learning"]
+      }
+    ],
+    "certifications": [
+      { "title": "Google Cloud Professional Data Engineer", "issuer": "Google Cloud", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 90,
+      "technical": 92,
+      "communication": 85
+    }
+  },
+  {
+    "id": "STU023",
+    "name": "Varun Pillai",
+    "branch": "ECE",
+    "graduation_year": 2027,
+    "cgpa": 8.0,
+    "backlogs": 0,
+    "skills": [
+      { "name": "C++", "level": 0.86 },
+      { "name": "Embedded Systems", "level": 0.88 },
+      { "name": "RTOS", "level": 0.82 },
+      { "name": "IoT", "level": 0.84 }
+    ],
+    "projects": [
+      {
+        "title": "Wearable Heart-Rate Telemetry Sensor",
+        "description": "Battery-optimized pulse oximeter firmware streaming PPG waveform data over Bluetooth Low Energy.",
+        "technologies": ["C++", "RTOS", "IoT", "Embedded Systems"]
+      }
+    ],
+    "certifications": [
+      { "title": "ARM Microcontroller Programming", "issuer": "Coursera", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 83,
+      "technical": 88,
+      "communication": 76
+    }
+  },
+  {
+    "id": "STU024",
+    "name": "Bhavna Malani",
+    "branch": "IT",
+    "graduation_year": 2027,
+    "cgpa": 7.8,
+    "backlogs": 0,
+    "skills": [
+      { "name": "React", "level": 0.86 },
+      { "name": "TypeScript", "level": 0.82 },
+      { "name": "REST API", "level": 0.84 },
+      { "name": "Tailwind CSS", "level": 0.85 }
+    ],
+    "projects": [
+      {
+        "title": "Collab Whiteboard Canvas",
+        "description": "HTML5 Canvas whiteboard with live cursor sync via socket.io and TypeScript types.",
+        "technologies": ["React", "TypeScript", "Tailwind CSS"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 82,
+      "technical": 84,
+      "communication": 86
+    }
+  },
+  {
+    "id": "STU025",
+    "name": "Naveen Choudhury",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 8.4,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.90 },
+      { "name": "SQL", "level": 0.86 },
+      { "name": "PostgreSQL", "level": 0.84 },
+      { "name": "Docker", "level": 0.80 },
+      { "name": "REST API", "level": 0.88 }
+    ],
+    "projects": [
+      {
+        "title": "Microservice Authentication Gateway",
+        "description": "Central OAuth2 and JWT authentication proxy routing requests to upstream microservices with Redis rate limiting.",
+        "technologies": ["Python", "PostgreSQL", "Docker", "REST API"]
+      }
+    ],
+    "certifications": [
+      { "title": "Docker Certified Associate", "issuer": "Mirantis", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 87,
+      "technical": 91,
+      "communication": 83
+    }
+  },
+  {
+    "id": "STU026",
+    "name": "Ritika Das",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 9.4,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.90 },
+      { "name": "SQL", "level": 0.88 },
+      { "name": "React", "level": 0.85 },
+      { "name": "Machine Learning", "level": 0.82 }
+    ],
+    "projects": [
+      {
+        "title": "AI Knowledge-Base Q&A Agent",
+        "description": "RAG pipeline querying PDF technical documents using vector embeddings and Streamlit interface.",
+        "technologies": ["Python", "React", "SQL", "Machine Learning"]
+      }
+    ],
+    "certifications": [
+      { "title": "AWS Certified Machine Learning - Specialty", "issuer": "Amazon Web Services", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 96,
+      "technical": 94,
+      "communication": 90
+    }
+  },
+  {
+    "id": "STU027",
+    "name": "Rahul Somani",
+    "branch": "EEE",
+    "graduation_year": 2027,
+    "cgpa": 6.9,
+    "backlogs": 1,
+    "skills": [
+      { "name": "C++", "level": 0.78 },
+      { "name": "IoT", "level": 0.80 },
+      { "name": "Embedded Systems", "level": 0.75 }
+    ],
+    "projects": [
+      {
+        "title": "Substation Energy Meter Logger",
+        "description": "Modbus protocol reader parsing electrical parameters and publishing to cloud dashboard.",
+        "technologies": ["C++", "IoT"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 72,
+      "technical": 75,
+      "communication": 70
+    }
+  },
+  {
+    "id": "STU028",
+    "name": "Deepika Nambiar",
+    "branch": "IT",
+    "graduation_year": 2027,
+    "cgpa": 8.5,
+    "backlogs": 0,
+    "skills": [
+      { "name": "React", "level": 0.92 },
+      { "name": "TypeScript", "level": 0.89 },
+      { "name": "Tailwind CSS", "level": 0.90 },
+      { "name": "REST API", "level": 0.85 }
+    ],
+    "projects": [
+      {
+        "title": "University Placement Cell Web App",
+        "description": "Frontend portal for placement officers to post company drives and review applicant resumes.",
+        "technologies": ["React", "TypeScript", "Tailwind CSS"]
+      }
+    ],
+    "certifications": [
+      { "title": "Meta Front-End Developer Certificate", "issuer": "Meta", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 86,
+      "technical": 89,
+      "communication": 92
+    }
+  },
+  {
+    "id": "STU029",
+    "name": "Karthik Raja",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 8.0,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Linux", "level": 0.88 },
+      { "name": "Docker", "level": 0.84 },
+      { "name": "Python", "level": 0.80 },
+      { "name": "Kubernetes", "level": 0.78 }
+    ],
+    "projects": [
+      {
+        "title": "Self-Healing Container Cluster",
+        "description": "Configured healthcheck probes and auto-scaling daemon on mini Kubernetes cluster.",
+        "technologies": ["Kubernetes", "Docker", "Linux"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 83,
+      "technical": 85,
+      "communication": 77
+    }
+  },
+  {
+    "id": "STU030",
+    "name": "Pallavi Hegde",
+    "branch": "CSE",
+    "graduation_year": 2027,
+    "cgpa": 7.7,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.86 },
+      { "name": "SQL", "level": 0.84 },
+      { "name": "REST API", "level": 0.82 },
+      { "name": "PostgreSQL", "level": 0.80 }
+    ],
+    "projects": [
+      {
+        "title": "Hospital Bed Reservation Microservice",
+        "description": "FastAPI reservation server handling concurrent database locks during peak load.",
+        "technologies": ["Python", "PostgreSQL", "REST API"]
+      }
+    ],
+    "certifications": [],
+    "assessment": {
+      "aptitude": 80,
+      "technical": 84,
+      "communication": 82
+    }
+  },
+  {
+    "id": "STU031",
+    "name": "Samarjit Roy",
+    "branch": "ECE",
+    "graduation_year": 2027,
+    "cgpa": 8.2,
+    "backlogs": 0,
+    "skills": [
+      { "name": "C++", "level": 0.88 },
+      { "name": "Embedded Systems", "level": 0.86 },
+      { "name": "RTOS", "level": 0.84 },
+      { "name": "IoT", "level": 0.80 },
+      { "name": "MQTT", "level": 0.82 }
+    ],
+    "projects": [
+      {
+        "title": "Industrial Vibration Telemetry Node",
+        "description": "3-axis accelerometer sampling at 1kHz on ESP32 sending FFT harmonics over MQTT.",
+        "technologies": ["C++", "RTOS", "IoT", "MQTT"]
+      }
+    ],
+    "certifications": [
+      { "title": "Embedded Systems Programming", "issuer": "edX", "year": 2024 }
+    ],
+    "assessment": {
+      "aptitude": 84,
+      "technical": 89,
+      "communication": 80
+    }
+  },
+  {
+    "id": "STU032",
+    "name": "Aishwarya Sen",
+    "branch": "IT",
+    "graduation_year": 2027,
+    "cgpa": 8.7,
+    "backlogs": 0,
+    "skills": [
+      { "name": "Python", "level": 0.88 },
+      { "name": "React", "level": 0.90 },
+      { "name": "SQL", "level": 0.86 },
+      { "name": "PostgreSQL", "level": 0.84 },
+      { "name": "REST API", "level": 0.88 }
+    ],
+    "projects": [
+      {
+        "title": "Real-Estate Listing & Virtual Tour Portal",
+        "description": "Full-stack property listing app with React map components, FastAPI REST backend, and PostgreSQL GIS storage.",
+        "technologies": ["Python", "React", "PostgreSQL", "REST API"]
+      }
+    ],
+    "certifications": [
+      { "title": "AWS Certified Developer - Associate", "issuer": "Amazon Web Services", "year": 2025 }
+    ],
+    "assessment": {
+      "aptitude": 88,
+      "technical": 91,
+      "communication": 90
     }
   }
 ]

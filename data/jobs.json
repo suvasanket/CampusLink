@@ -7,8 +7,14 @@
     "minimum_cgpa": 7.5,
     "eligible_branches": ["CSE", "IT"],
     "max_backlogs": 0,
+    "graduation_years": [2027],
     "required_skills": ["Python", "SQL", "REST API"],
     "preferred_skills": ["FastAPI", "PostgreSQL", "Docker"],
+    "responsibilities": [
+      "Develop high-throughput REST APIs and backend microservices",
+      "Design database schemas and optimize PostgreSQL queries",
+      "Collaborate on CI/CD containerized deployments"
+    ],
     "experience_level": "Fresher"
   },
   {
@@ -19,8 +25,14 @@
     "minimum_cgpa": 7.0,
     "eligible_branches": ["CSE", "IT", "ECE"],
     "max_backlogs": 0,
+    "graduation_years": [2027],
     "required_skills": ["React", "TypeScript", "REST API"],
     "preferred_skills": ["Tailwind CSS", "Next.js", "Redux"],
+    "responsibilities": [
+      "Build modular and accessible React component libraries",
+      "Integrate backend REST endpoints with optimized state caching",
+      "Ensure cross-browser responsive design fidelity"
+    ],
     "experience_level": "Fresher"
   },
   {
@@ -31,8 +43,68 @@
     "minimum_cgpa": 8.0,
     "eligible_branches": ["CSE", "IT"],
     "max_backlogs": 0,
+    "graduation_years": [2027],
     "required_skills": ["Python", "Machine Learning", "PyTorch"],
     "preferred_skills": ["SQL", "FastAPI", "Transformers"],
+    "responsibilities": [
+      "Fine-tune neural models for NLP classification and embeddings",
+      "Build feature engineering pipelines and evaluation benchmarks",
+      "Serve machine learning endpoints via asynchronous microservices"
+    ],
+    "experience_level": "Fresher"
+  },
+  {
+    "id": "JOB004",
+    "company": "CloudOps Technologies",
+    "title": "Cloud & DevOps Associate",
+    "description": "Hiring cloud infrastructure engineers to automate deployments, configure container clusters, and manage CI/CD pipelines.",
+    "minimum_cgpa": 7.2,
+    "eligible_branches": ["CSE", "IT", "ECE"],
+    "max_backlogs": 0,
+    "graduation_years": [2027],
+    "required_skills": ["Linux", "Docker", "Python"],
+    "preferred_skills": ["Kubernetes", "AWS", "CI/CD"],
+    "responsibilities": [
+      "Maintain containerized build and test automation pipelines",
+      "Provision scalable cloud resources using Infrastructure-as-Code",
+      "Monitor application performance metrics and system alerts"
+    ],
+    "experience_level": "Fresher"
+  },
+  {
+    "id": "JOB005",
+    "company": "EmbeddedEdge Systems",
+    "title": "Embedded & Firmware Engineer",
+    "description": "Seeking hardware-software engineers to write low-level C/C++ firmware, manage sensor communication buses, and program microcontrollers.",
+    "minimum_cgpa": 6.5,
+    "eligible_branches": ["ECE", "EEE", "MECH"],
+    "max_backlogs": 1,
+    "graduation_years": [2027],
+    "required_skills": ["C++", "Embedded Systems", "IoT"],
+    "preferred_skills": ["RTOS", "MQTT", "Python"],
+    "responsibilities": [
+      "Develop embedded C/C++ drivers for ARM and ESP32 microcontrollers",
+      "Implement low-latency wireless communication protocols (BLE, MQTT)",
+      "Debug board-level hardware telemetry and sensor timing"
+    ],
+    "experience_level": "Fresher"
+  },
+  {
+    "id": "JOB006",
+    "company": "Apex Financial Tech",
+    "title": "Full-Stack Fintech Engineer",
+    "description": "Fast-paced fintech team looking for versatile full-stack developers to build transaction processing systems and user portals.",
+    "minimum_cgpa": 8.0,
+    "eligible_branches": ["CSE", "IT"],
+    "max_backlogs": 0,
+    "graduation_years": [2027],
+    "required_skills": ["Python", "React", "SQL"],
+    "preferred_skills": ["PostgreSQL", "Docker", "TypeScript"],
+    "responsibilities": [
+      "Build secure financial ledger endpoints and transaction APIs",
+      "Design intuitive web consoles with real-time balance dashboards",
+      "Ensure compliance with high-availability financial SLAs"
+    ],
     "experience_level": "Fresher"
   }
 ]
