@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import {
   StudentProfile,
   JobRequirements,
   StudentReadinessResponse,
   SkillGapResponse,
-  ApplicationRecord
+  ApplicationRecord,
+  Institution
 } from '../types';
 import {
   GraduationCap,
@@ -99,9 +101,13 @@ ASSESSMENTS
 };
 
 export const StudentPortal: React.FC = () => {
+  const { institutionId, studentId } = useParams<{ institutionId?: string; studentId?: string }>();
+  const navigate = useNavigate();
+
+  const [institution, setInstitution] = useState<Institution | null>(null);
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [jobs, setJobs] = useState<JobRequirements[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('STU001');
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || 'STU001');
   const [selectedJobId, setSelectedJobId] = useState<string>('JOB001');
   
   const [readiness, setReadiness] = useState<StudentReadinessResponse | null>(null);
@@ -118,7 +124,13 @@ export const StudentPortal: React.FC = () => {
 
   useEffect(() => {
     loadInitialData();
-  }, []);
+  }, [institutionId]);
+
+  useEffect(() => {
+    if (studentId && studentId !== selectedStudentId) {
+      setSelectedStudentId(studentId);
+    }
+  }, [studentId]);
 
   useEffect(() => {
     if (selectedStudentId) {
@@ -133,19 +145,36 @@ export const StudentPortal: React.FC = () => {
   const loadInitialData = async () => {
     try {
       setLoading(true);
-      const [studentsList, jobsList] = await Promise.all([
-        api.getStudents(),
-        api.getJobs()
+      const activeInst = institutionId || 'apex-inst';
+      const [instData, studentsList, jobsList] = await Promise.all([
+        api.getInstitution(activeInst).catch(() => null),
+        api.getInstitutionStudents(activeInst).catch(() => api.getStudents()),
+        api.getInstitutionJobs(activeInst).catch(() => api.getJobs())
       ]);
+
+      if (instData) setInstitution(instData);
       setStudents(studentsList);
       setJobs(jobsList);
-      if (studentsList.length > 0) setSelectedStudentId(studentsList[0].id);
+
+      // Prioritize studentId from route param, else first available
+      if (studentId) {
+        setSelectedStudentId(studentId);
+      } else if (studentsList.length > 0) {
+        setSelectedStudentId(studentsList[0].id);
+      }
+
       if (jobsList.length > 0) setSelectedJobId(jobsList[0].id);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStudentChange = (newStuId: string) => {
+    setSelectedStudentId(newStuId);
+    const activeInstSlug = institution?.username || institutionId || 'apex-inst';
+    navigate(`/${activeInstSlug}/student/${newStuId}`);
   };
 
   const loadStudentReadiness = async (stuId: string) => {
@@ -220,27 +249,44 @@ export const StudentPortal: React.FC = () => {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-800 to-slate-900 border border-slate-700/80 p-6 sm:p-8 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold mb-3 border border-emerald-500/30">
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>Student Career Readiness Portal</span>
+            <div className="flex items-center space-x-2 text-xs font-semibold mb-3">
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>Student Career Readiness Portal</span>
+              </span>
+              <button
+                onClick={() => navigate(`/${institution?.username || institutionId || 'apex-inst'}`)}
+                className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+              >
+                ← {institution?.name || 'Campus Dashboard'}
+              </button>
             </div>
             <h1 className="text-3xl font-extrabold text-white tracking-tight">
               Candidate Diagnostic & Skill Roadmap
             </h1>
             <p className="text-slate-300 text-sm mt-2 leading-relaxed">
-              Understand your baseline career employability tier, compare your profile against real recruiter requisitions, identify critical skill gaps, and execute targeted preparation actions.
+              Enrolled under <strong className="text-emerald-300">{institution?.name || 'Institution Campus'}</strong>.
+              Permanent URL: <span className="font-mono text-emerald-400 text-xs">/{institution?.username || institutionId || 'apex-inst'}/student/{selectedStudentId}</span>
             </p>
           </div>
 
           {/* Action & Student Selector */}
           <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/80 shrink-0 space-y-3">
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                Select Active Profile:
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Active Profile:
+                </label>
+                <button
+                  onClick={() => navigate(`/${institution?.username || institutionId || 'apex-inst'}/student-registration`)}
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300"
+                >
+                  + New Student
+                </button>
+              </div>
               <select
                 value={selectedStudentId}
-                onChange={e => setSelectedStudentId(e.target.value)}
+                onChange={e => handleStudentChange(e.target.value)}
                 className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 w-full"
               >
                 {students.map(s => (

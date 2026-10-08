@@ -5,7 +5,12 @@ import {
   StudentReadinessResponse,
   SkillGapResponse,
   InstitutionStats,
-  ApplicationRecord
+  ApplicationRecord,
+  Institution,
+  InstitutionCreateData,
+  Recruiter,
+  RecruiterCreateData,
+  RecruiterDetailResponse
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -31,6 +36,40 @@ export const api = {
   // System Health
   getHealth: () => fetchJson<{ status: string; database: string; version: string }>('/health'),
 
+  // Institutions
+  getInstitutions: () => fetchJson<Institution[]>('/institutions'),
+  getInstitution: (identifier: string) => fetchJson<Institution>(`/institutions/${identifier}`),
+  createInstitution: (data: InstitutionCreateData) =>
+    fetchJson<Institution>('/institutions', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+  getScopedInstitutionStats: (identifier: string) =>
+    fetchJson<InstitutionStats>(`/institutions/${identifier}/stats`),
+  getInstitutionStudents: (identifier: string, branch?: string, minCgpa?: number) => {
+    const q = new URLSearchParams();
+    if (branch && branch !== 'all') q.set('branch', branch);
+    if (minCgpa !== undefined) q.set('min_cgpa', minCgpa.toString());
+    const query = q.toString() ? `?${q.toString()}` : '';
+    return fetchJson<StudentProfile[]>(`/institutions/${identifier}/students${query}`);
+  },
+  registerStudent: (identifier: string, student: StudentProfile) =>
+    fetchJson<StudentProfile>(`/institutions/${identifier}/students`, {
+      method: 'POST',
+      body: JSON.stringify(student)
+    }),
+  getInstitutionRecruiters: (identifier: string) =>
+    fetchJson<Recruiter[]>(`/institutions/${identifier}/recruiters`),
+  registerRecruiter: (identifier: string, data: RecruiterCreateData) =>
+    fetchJson<Recruiter>(`/institutions/${identifier}/recruiters`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+  getRecruiterDetails: (identifier: string, recruiterId: string) =>
+    fetchJson<RecruiterDetailResponse>(`/institutions/${identifier}/recruiters/${recruiterId}`),
+  getInstitutionJobs: (identifier: string) =>
+    fetchJson<JobRequirements[]>(`/institutions/${identifier}/jobs`),
+
   // Jobs
   getJobs: () => fetchJson<JobRequirements[]>('/jobs'),
   getJob: (id: string) => fetchJson<JobRequirements>(`/jobs/${id}`),
@@ -41,8 +80,11 @@ export const api = {
     }),
 
   // Candidate Matching
-  getJobMatches: (jobId: string, includeIneligible = true, limit = 50) =>
-    fetchJson<JobMatchResult>(`/jobs/${jobId}/matches?include_ineligible=${includeIneligible}&limit=${limit}`),
+  getJobMatches: (jobId: string, includeIneligible = true, limit = 50, institutionId?: string) => {
+    let url = `/jobs/${jobId}/matches?include_ineligible=${includeIneligible}&limit=${limit}`;
+    if (institutionId) url += `&institution_id=${encodeURIComponent(institutionId)}`;
+    return fetchJson<JobMatchResult>(url);
+  },
 
   // Students
   getStudents: (branch?: string) =>
@@ -55,7 +97,7 @@ export const api = {
   getStudentSkillGaps: (studentId: string, jobId: string) =>
     fetchJson<SkillGapResponse>(`/students/${studentId}/skill-gaps/${jobId}`),
 
-  // Institution Analytics
+  // Legacy Institution Analytics
   getInstitutionStats: () => fetchJson<InstitutionStats>('/institution/stats'),
 
   // AI Resume Parsing

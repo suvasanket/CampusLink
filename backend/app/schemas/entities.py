@@ -34,6 +34,7 @@ class StudentProfile(BaseModel):
     assessment: AssessmentData
     readiness_score: Optional[float] = None
     readiness_tier: Optional[str] = None
+    institution_id: Optional[str] = "inst-001"
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,6 +52,8 @@ class JobRequirements(BaseModel):
     preferred_skills: Optional[List[str]] = Field(default_factory=list)
     responsibilities: Optional[List[str]] = Field(default_factory=list)
     experience_level: Optional[str] = "Fresher"
+    institution_id: Optional[str] = "inst-001"
+    recruiter_id: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -140,3 +143,54 @@ class ApplicationResponse(BaseModel):
     created_at: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+# --- Institution Schemas ---
+class InstitutionCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=150)
+    username: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-zA-Z0-9_-]+$")
+    code: Optional[str] = None
+    location: Optional[str] = None
+    contact_email: Optional[str] = None
+    admin_name: Optional[str] = None
+    website: Optional[str] = None
+
+class InstitutionResponse(BaseModel):
+    id: str
+    username: str
+    name: str
+    code: Optional[str] = None
+    location: Optional[str] = None
+    contact_email: Optional[str] = None
+    admin_name: Optional[str] = None
+    website: Optional[str] = None
+    is_verified: bool = True
+    created_at: Optional[str] = None
+    total_students: Optional[int] = 0
+    total_jobs: Optional[int] = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Recruiter Schemas ---
+class RecruiterCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    company_name: str = Field(..., min_length=2, max_length=100)
+    email: str = Field(..., min_length=5, max_length=100)
+    designation: Optional[str] = "University Talent Lead"
+    # Optional initial role to post during registration
+    initial_job_title: Optional[str] = None
+    initial_job_min_cgpa: Optional[float] = 7.0
+    initial_job_branches: Optional[List[str]] = Field(default_factory=lambda: ["CSE", "IT", "ECE"])
+    initial_job_skills: Optional[List[str]] = Field(default_factory=list)
+
+class RecruiterResponse(BaseModel):
+    id: str
+    institution_id: str
+    name: str
+    company_name: str
+    email: str
+    designation: Optional[str] = None
+    created_at: Optional[str] = None
+    active_jobs_count: Optional[int] = 0
+
+    model_config = ConfigDict(from_attributes=True)
+

@@ -3,7 +3,6 @@
 This document defines the roles, operational boundaries, execution standards, and progression logging protocol for autonomous and human-assisted AI agents collaborating on the **CampusLink** codebase.
 
 **Authoritative Master Specification:** [`new_plan.md`](file:///Users/suvasanketrout/Developer/CampusLink/new_plan.md)
-**Task Progression File:** [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md)
 *(Note: `init.md` is deprecated and superseded by `new_plan.md`)*
 
 ---
@@ -96,19 +95,12 @@ To maximize platform stability and user experience:
 
 ---
 
-### Rule 6: Mandatory Task Progression Logging
-- Any agent or developer working on the codebase **must log every significant step, completed task, and environment event** into [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md).
-- Keep the milestone table and task checklist in [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md) updated continuously.
-
----
-
 ## 3. Directory Map & Ownership Responsibilities
 
 ```text
 campuslink/
 ├── new_plan.md               # Master root specification (supersedes init.md)
 ├── agents.md                 # System collaboration rules & protocols (this file)
-├── TASK_PROGRESSION.md       # Live execution & task progression tracker
 ├── docs/contracts/           # Formal JSON schema contracts
 │   ├── student.schema.json
 │   ├── job.schema.json

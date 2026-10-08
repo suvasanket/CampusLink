@@ -11,7 +11,14 @@ from app.schemas.entities import (
     JobMatchResult,
     ReadinessFactorScores,
     StudentReadinessResponse,
-    SkillGapResponse
+    SkillGapResponse,
+    ApplicationCreate,
+    ApplicationResponse,
+    ResumeParseRequest,
+    InstitutionCreate,
+    InstitutionResponse,
+    RecruiterCreate,
+    RecruiterResponse
 )
 
 __all__ = [
@@ -28,4 +35,11 @@ __all__ = [
     "ReadinessFactorScores",
     "StudentReadinessResponse",
     "SkillGapResponse",
+    "ApplicationCreate",
+    "ApplicationResponse",
+    "ResumeParseRequest",
+    "InstitutionCreate",
+    "InstitutionResponse",
+    "RecruiterCreate",
+    "RecruiterResponse"
 ]

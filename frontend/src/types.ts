@@ -34,6 +34,7 @@ export interface StudentProfile {
   assessment: AssessmentData;
   readiness_score?: number;
   readiness_tier?: string;
+  institution_id?: string;
 }
 
 export interface JobRequirements {
@@ -49,6 +50,8 @@ export interface JobRequirements {
   preferred_skills?: string[];
   responsibilities?: string[];
   experience_level?: string;
+  institution_id?: string;
+  recruiter_id?: string;
 }
 
 export interface ScoreBreakdown {
@@ -115,6 +118,9 @@ export interface SkillGapResponse {
 }
 
 export interface InstitutionStats {
+  institution_id?: string;
+  institution_username?: string;
+  institution_name?: string;
   total_students: number;
   total_jobs: number;
   total_shortlists?: number;
@@ -141,3 +147,56 @@ export interface ApplicationRecord {
   notes?: string;
   created_at?: string;
 }
+
+export interface Institution {
+  id: string;
+  username: string;
+  name: string;
+  code?: string;
+  location?: string;
+  contact_email?: string;
+  admin_name?: string;
+  website?: string;
+  is_verified?: boolean;
+  created_at?: string;
+  total_students?: number;
+  total_jobs?: number;
+}
+
+export interface InstitutionCreateData {
+  name: string;
+  username: string;
+  code?: string;
+  location?: string;
+  contact_email?: string;
+  admin_name?: string;
+  website?: string;
+}
+
+export interface Recruiter {
+  id: string;
+  institution_id: string;
+  name: string;
+  company_name: string;
+  email: string;
+  designation?: string;
+  created_at?: string;
+  active_jobs_count?: number;
+}
+
+export interface RecruiterCreateData {
+  name: string;
+  company_name: string;
+  email: string;
+  designation?: string;
+  initial_job_title?: string;
+  initial_job_min_cgpa?: number;
+  initial_job_branches?: string[];
+  initial_job_skills?: string[];
+}
+
+export interface RecruiterDetailResponse {
+  recruiter: Recruiter;
+  jobs: JobRequirements[];
+}
+

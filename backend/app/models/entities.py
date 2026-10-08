@@ -22,6 +22,9 @@ class Student(Base):
     readiness_score = Column(Float, nullable=True)
     readiness_tier = Column(String(50), nullable=True)
     
+    # Associated Institution
+    institution_id = Column(String(50), ForeignKey("institutions.id"), nullable=True, default="inst-001", index=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -43,6 +46,10 @@ class Job(Base):
     responsibilities = Column(JSON, nullable=True, default=list)  # list of str
     experience_level = Column(String(50), default="Fresher")
     
+    # Institution & Recruiter linkage
+    institution_id = Column(String(50), ForeignKey("institutions.id"), nullable=True, default="inst-001", index=True)
+    recruiter_id = Column(String(50), nullable=True, index=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -50,9 +57,25 @@ class Institution(Base):
     __tablename__ = "institutions"
 
     id = Column(String(50), primary_key=True, index=True)
+    username = Column(String(50), unique=True, index=True, nullable=True)  # slug: e.g. "apex-inst"
     name = Column(String(150), nullable=False)
     code = Column(String(20), nullable=True)
     location = Column(String(100), nullable=True)
+    contact_email = Column(String(100), nullable=True)
+    admin_name = Column(String(100), nullable=True)
+    website = Column(String(150), nullable=True)
+    is_verified = Column(Boolean, default=True)  # Reserved for future OTP activation
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Recruiter(Base):
+    __tablename__ = "recruiters"
+
+    id = Column(String(50), primary_key=True, index=True)
+    institution_id = Column(String(50), ForeignKey("institutions.id"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    company_name = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False)
+    designation = Column(String(100), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class Company(Base):

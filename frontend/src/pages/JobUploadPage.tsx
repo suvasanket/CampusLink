@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { JobRequirements } from '../types';
 import { PlusCircle, CheckCircle2, AlertCircle, FileText, Sparkles, Upload, FileUp } from 'lucide-react';
 
 interface JobUploadPageProps {
-  onJobCreated: (newJobId: string) => void;
+  onJobCreated?: (newJobId: string) => void;
 }
 
 const SAMPLE_JDS = {
@@ -60,6 +61,7 @@ Preferred Qualifications:
 };
 
 export const JobUploadPage: React.FC<JobUploadPageProps> = ({ onJobCreated }) => {
+  const navigate = useNavigate();
   const [company, setCompany] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -198,7 +200,11 @@ export const JobUploadPage: React.FC<JobUploadPageProps> = ({ onJobCreated }) =>
       await api.createJob(payload);
       setSuccessMsg(`Requisition created successfully as ${newJobId}! Redirecting...`);
       setTimeout(() => {
-        onJobCreated(newJobId);
+        if (onJobCreated) {
+          onJobCreated(newJobId);
+        } else {
+          navigate('/apex-inst/recruiter/REC001');
+        }
       }, 1200);
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to create job.');

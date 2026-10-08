@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { JobRequirements, JobMatchResult, CandidateMatchItem, ApplicationRecord } from '../types';
+import { JobRequirements, JobMatchResult, CandidateMatchItem, ApplicationRecord, Recruiter, Institution } from '../types';
 import { CandidateCard } from '../components/CandidateCard';
 import { CandidateModal } from '../components/CandidateModal';
-import { Briefcase, Filter, Search, Users, Sparkles, AlertCircle, RefreshCw, Star, Download, Sliders } from 'lucide-react';
+import { Briefcase, Filter, Search, Users, Sparkles, AlertCircle, RefreshCw, Star, Download, Sliders, PlusCircle, ArrowLeft } from 'lucide-react';
 
 export const RecruiterPortal: React.FC = () => {
+  const { institutionId, recruiterId } = useParams<{ institutionId?: string; recruiterId?: string }>();
+  const navigate = useNavigate();
+
+  const activeInst = institutionId || 'apex-inst';
+
+  const [institution, setInstitution] = useState<Institution | null>(null);
+  const [recruiter, setRecruiter] = useState<Recruiter | null>(null);
   const [jobs, setJobs] = useState<JobRequirements[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>('');
   const [matchResult, setMatchResult] = useState<JobMatchResult | null>(null);
@@ -22,14 +30,42 @@ export const RecruiterPortal: React.FC = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateMatchItem | null>(null);
 
   useEffect(() => {
-    loadJobs();
-  }, []);
+    loadRecruiterAndJobs();
+  }, [activeInst, recruiterId]);
 
-  const loadJobs = async () => {
+  const loadRecruiterAndJobs = async () => {
     try {
       setLoading(true);
       setError(null);
-      const jobsList = await api.getJobs();
+
+      // Load Institution info
+      const instData = await api.getInstitution(activeInst).catch(() => null);
+      if (instData) setInstitution(instData);
+
+      let jobsList: JobRequirements[] = [];
+
+      if (recruiterId) {
+        try {
+          const detail = await api.getRecruiterDetails(activeInst, recruiterId);
+          setRecruiter(detail.recruiter);
+          if (detail.jobs && detail.jobs.length > 0) {
+            jobsList = detail.jobs;
+          } else {
+            // If no specific jobs for recruiter, fetch institution jobs
+            jobsList = await api.getInstitutionJobs(activeInst);
+          }
+        } catch (e) {
+          console.warn('Could not load specific recruiter details:', e);
+          jobsList = await api.getInstitutionJobs(activeInst);
+        }
+      } else {
+        jobsList = await api.getInstitutionJobs(activeInst);
+      }
+
+      if (!jobsList || jobsList.length === 0) {
+        jobsList = await api.getJobs();
+      }
+
       setJobs(jobsList);
       if (jobsList.length > 0) {
         setSelectedJobId(jobsList[0].id);
@@ -62,7 +98,7 @@ export const RecruiterPortal: React.FC = () => {
     try {
       setEvaluating(true);
       setError(null);
-      const res = await api.getJobMatches(jobId, true, 50);
+      const res = await api.getJobMatches(jobId, true, 50, activeInst);
       setMatchResult(res);
     } catch (err: any) {
       setError(err.message || 'Failed to compute candidate matches.');
@@ -170,17 +206,43 @@ export const RecruiterPortal: React.FC = () => {
       
       {/* Top Banner: Role Overview */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/60 via-slate-800 to-slate-900 border border-slate-700/80 p-6 sm:p-8 shadow-xl">
-        <div className="max-w-2xl">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold mb-3 border border-indigo-500/30">
-            <Briefcase className="w-3.5 h-3.5" />
-            <span>Recruiter Candidate Matching View</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="flex items-center space-x-2 text-xs font-semibold mb-3">
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Recruiter Candidate Matching Console</span>
+              </span>
+              <button
+                onClick={() => navigate(`/${institution?.username || activeInst}`)}
+                className="text-xs text-sky-400 hover:text-sky-300 underline"
+              >
+                ← {institution?.name || 'Campus Dashboard'}
+              </button>
+            </div>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">
+              {recruiter ? `${recruiter.company_name} Talent Pipeline` : 'AI-Ranked Campus Hiring Shortlist'}
+            </h1>
+            <p className="text-slate-300 text-sm mt-2 leading-relaxed">
+              {recruiter && (
+                <span>
+                  Hiring Lead: <strong className="text-white">{recruiter.name}</strong> ({recruiter.designation || 'Talent Lead'}) •{' '}
+                </span>
+              )}
+              Campus: <strong className="text-indigo-300">{institution?.name || activeInst}</strong>.
+              Evaluating student cohort using deterministic hard eligibility criteria, 6-factor weighted multi-dimensional scoring, and fact-grounded explainability.
+            </p>
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
-            AI-Ranked Campus Hiring Shortlist
-          </h1>
-          <p className="text-slate-300 text-sm mt-2 leading-relaxed">
-            Select a job requisition to instantly evaluate the student pool through deterministic hard eligibility criteria, 6-factor weighted multi-dimensional scoring, and fact-grounded explainability.
-          </p>
+
+          <div className="flex flex-col sm:flex-row items-center gap-2 self-start md:self-center">
+            <button
+              onClick={() => navigate(`/${institution?.username || activeInst}/recruiter-registration`)}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-sky-300 border border-slate-700 flex items-center space-x-1"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Register New Role</span>
+            </button>
+          </div>
         </div>
       </div>
 

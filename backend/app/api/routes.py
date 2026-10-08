@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import logging
+import uuid
 
 from app.db.session import get_db, active_db_type
 from app.core.config import settings
-from app.models.entities import Student, Job, MatchRecord, Institution, Company, Application
+from app.models.entities import Student, Job, MatchRecord, Institution, Company, Application, Recruiter
 from app.schemas.entities import (
     StudentProfile,
     JobRequirements,
@@ -15,7 +16,11 @@ from app.schemas.entities import (
     SkillGapResponse,
     ResumeParseRequest,
     ApplicationCreate,
-    ApplicationResponse
+    ApplicationResponse,
+    InstitutionCreate,
+    InstitutionResponse,
+    RecruiterCreate,
+    RecruiterResponse
 )
 from app.services.matching import match_candidates_for_job
 from app.services.recommendations import compute_student_readiness, compute_skill_gaps
@@ -79,13 +84,14 @@ def parse_job(request: JobParseRequest):
 @router.get("/jobs/{job_id}/matches", response_model=JobMatchResult, tags=["Matching"])
 def get_job_matches(
     job_id: str,
+    institution_id: Optional[str] = Query(None, description="Scope evaluation to a specific institution"),
     include_ineligible: bool = Query(True, description="Include candidates failing hard eligibility at bottom"),
     limit: int = Query(50, ge=1, le=100, description="Max candidates to return"),
     db: Session = Depends(get_db)
 ):
     """
     Core Intelligence Pipeline:
-    Evaluates all students against the specified job, applying deterministic eligibility filtering,
+    Evaluates students against the specified job, applying deterministic eligibility filtering,
     6-factor weighted scoring, local zero-token vector matching, and factual grounded explainability.
     """
     job = db.query(Job).filter(Job.id == job_id).first()
@@ -95,7 +101,23 @@ def get_job_matches(
             detail=f"Job with id '{job_id}' not found."
         )
     
-    students = db.query(Student).all()
+    # Filter candidates by institution if specified or associated with job
+    target_inst = institution_id or job.institution_id
+    if target_inst:
+        # Resolve username or id
+        inst_obj = db.query(Institution).filter(
+            (Institution.id == target_inst) | (Institution.username == target_inst)
+        ).first()
+        target_id = inst_obj.id if inst_obj else target_inst
+        students = db.query(Student).filter(
+            (Student.institution_id == target_id) | 
+            (Student.institution_id.is_(None) if target_id in ["inst-001", "apex-inst"] else False)
+        ).all()
+        if not students:
+            students = db.query(Student).all()
+    else:
+        students = db.query(Student).all()
+
     if not students:
         return JobMatchResult(
             job_id=job.id,
@@ -298,15 +320,153 @@ def delete_application(app_id: int, db: Session = Depends(get_db)):
     db.commit()
     return None
 
-# --- Institution Portal Statistics ---
-@router.get("/institution/stats", tags=["Institution"])
-def get_institution_stats(db: Session = Depends(get_db)):
-    """Return cohort-level readiness distribution, application counts, and branch summary."""
-    students = db.query(Student).all()
-    jobs = db.query(Job).all()
-    total_shortlists = db.query(Application).filter(Application.status == "Shortlisted").count()
-    total_interviews = db.query(Application).filter(Application.status == "Interview").count()
-    total_offers = db.query(Application).filter(Application.status == "Offered").count()
+# --- Institution & Multi-Tenant Scoping Endpoints ---
+
+def resolve_institution(identifier: str, db: Session) -> Institution:
+    """Find institution by either its internal ID or vanity username slug."""
+    inst = db.query(Institution).filter(
+        (Institution.id == identifier) | (Institution.username == identifier)
+    ).first()
+    if not inst:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Institution '{identifier}' not found."
+        )
+    return inst
+
+@router.get("/institutions", response_model=List[InstitutionResponse], tags=["Institution"])
+def list_institutions(db: Session = Depends(get_db)):
+    """Retrieve all registered universities and colleges."""
+    institutions = db.query(Institution).order_by(Institution.name.asc()).all()
+    results = []
+    for inst in institutions:
+        is_default = inst.id in ["inst-001", "apex-inst"]
+        stu_count = db.query(Student).filter(
+            (Student.institution_id == inst.id) | (Student.institution_id.is_(None) if is_default else False)
+        ).count()
+        job_count = db.query(Job).filter(
+            (Job.institution_id == inst.id) | (Job.institution_id.is_(None) if is_default else False)
+        ).count()
+        results.append(InstitutionResponse(
+            id=inst.id,
+            username=inst.username or inst.id,
+            name=inst.name,
+            code=inst.code,
+            location=inst.location,
+            contact_email=inst.contact_email,
+            admin_name=inst.admin_name,
+            website=inst.website,
+            is_verified=inst.is_verified,
+            created_at=inst.created_at.isoformat() if inst.created_at else None,
+            total_students=stu_count,
+            total_jobs=job_count
+        ))
+    return results
+
+@router.post("/institutions", response_model=InstitutionResponse, status_code=status.HTTP_201_CREATED, tags=["Institution"])
+def register_institution(inst_in: InstitutionCreate, db: Session = Depends(get_db)):
+    """
+    Register a new institution/college.
+    Note: Email OTP verification is skipped for instant onboarding in this release.
+    """
+    clean_slug = inst_in.username.strip().lower()
+    existing_username = db.query(Institution).filter(Institution.username == clean_slug).first()
+    if existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"College username/slug '{clean_slug}' is already taken. Please choose another."
+        )
+    
+    inst_id = f"inst-{clean_slug}"
+    existing_id = db.query(Institution).filter(Institution.id == inst_id).first()
+    if existing_id:
+        inst_id = f"inst-{clean_slug}-{uuid.uuid4().hex[:4]}"
+
+    new_inst = Institution(
+        id=inst_id,
+        username=clean_slug,
+        name=inst_in.name.strip(),
+        code=inst_in.code.strip() if inst_in.code else clean_slug.upper()[:6],
+        location=inst_in.location,
+        contact_email=inst_in.contact_email,
+        admin_name=inst_in.admin_name,
+        website=inst_in.website,
+        is_verified=True
+    )
+    db.add(new_inst)
+    db.commit()
+    db.refresh(new_inst)
+
+    return InstitutionResponse(
+        id=new_inst.id,
+        username=new_inst.username,
+        name=new_inst.name,
+        code=new_inst.code,
+        location=new_inst.location,
+        contact_email=new_inst.contact_email,
+        admin_name=new_inst.admin_name,
+        website=new_inst.website,
+        is_verified=new_inst.is_verified,
+        created_at=new_inst.created_at.isoformat() if new_inst.created_at else None,
+        total_students=0,
+        total_jobs=0
+    )
+
+@router.get("/institutions/{identifier}", response_model=InstitutionResponse, tags=["Institution"])
+def get_institution(identifier: str, db: Session = Depends(get_db)):
+    """Retrieve details for a specific college by ID or username slug."""
+    inst = resolve_institution(identifier, db)
+    is_default = inst.id in ["inst-001", "apex-inst"]
+    stu_count = db.query(Student).filter(
+        (Student.institution_id == inst.id) | (Student.institution_id.is_(None) if is_default else False)
+    ).count()
+    job_count = db.query(Job).filter(
+        (Job.institution_id == inst.id) | (Job.institution_id.is_(None) if is_default else False)
+    ).count()
+
+    return InstitutionResponse(
+        id=inst.id,
+        username=inst.username or inst.id,
+        name=inst.name,
+        code=inst.code,
+        location=inst.location,
+        contact_email=inst.contact_email,
+        admin_name=inst.admin_name,
+        website=inst.website,
+        is_verified=inst.is_verified,
+        created_at=inst.created_at.isoformat() if inst.created_at else None,
+        total_students=stu_count,
+        total_jobs=job_count
+    )
+
+@router.get("/institutions/{identifier}/stats", tags=["Institution"])
+def get_scoped_institution_stats(identifier: str, db: Session = Depends(get_db)):
+    """Return cohort-level readiness distribution, application counts, and branch summary for this institution."""
+    inst = resolve_institution(identifier, db)
+    is_default = inst.id in ["inst-001", "apex-inst"]
+
+    students = db.query(Student).filter(
+        (Student.institution_id == inst.id) | (Student.institution_id.is_(None) if is_default else False)
+    ).all()
+    jobs = db.query(Job).filter(
+        (Job.institution_id == inst.id) | (Job.institution_id.is_(None) if is_default else False)
+    ).all()
+
+    student_ids = [s.id for s in students]
+    total_shortlists = db.query(Application).filter(
+        Application.student_id.in_(student_ids),
+        Application.status == "Shortlisted"
+    ).count() if student_ids else 0
+
+    total_interviews = db.query(Application).filter(
+        Application.student_id.in_(student_ids),
+        Application.status == "Interview"
+    ).count() if student_ids else 0
+
+    total_offers = db.query(Application).filter(
+        Application.student_id.in_(student_ids),
+        Application.status == "Offered"
+    ).count() if student_ids else 0
 
     tier_counts = {
         "Highly Employable": 0,
@@ -314,7 +474,7 @@ def get_institution_stats(db: Session = Depends(get_db)):
         "Developing": 0,
         "Not Ready": 0
     }
-    branch_counts = {}
+    branch_counts: Dict[str, Any] = {}
 
     for s in students:
         readiness_resp = compute_student_readiness(s)
@@ -333,6 +493,9 @@ def get_institution_stats(db: Session = Depends(get_db)):
         del data["total_cgpa"]
 
     return {
+        "institution_id": inst.id,
+        "institution_username": inst.username,
+        "institution_name": inst.name,
         "total_students": len(students),
         "total_jobs": len(jobs),
         "total_shortlists": total_shortlists,
@@ -341,4 +504,189 @@ def get_institution_stats(db: Session = Depends(get_db)):
         "readiness_distribution": tier_counts,
         "branch_summary": branch_counts
     }
+
+@router.get("/institutions/{identifier}/students", response_model=List[StudentProfile], tags=["Institution"])
+def list_institution_students(
+    identifier: str,
+    branch: Optional[str] = Query(None),
+    min_cgpa: Optional[float] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """Retrieve students enrolled in this specific institution."""
+    inst = resolve_institution(identifier, db)
+    is_default = inst.id in ["inst-001", "apex-inst"]
+
+    query = db.query(Student).filter(
+        (Student.institution_id == inst.id) | (Student.institution_id.is_(None) if is_default else False)
+    )
+    if branch:
+        query = query.filter(Student.branch.ilike(branch.strip()))
+    if min_cgpa is not None:
+        query = query.filter(Student.cgpa >= min_cgpa)
+    return query.all()
+
+@router.post("/institutions/{identifier}/students", response_model=StudentProfile, status_code=status.HTTP_201_CREATED, tags=["Institution"])
+def register_institution_student(identifier: str, student_in: StudentProfile, db: Session = Depends(get_db)):
+    """Register a student under a specific college."""
+    inst = resolve_institution(identifier, db)
+    existing = db.query(Student).filter(Student.id == student_in.id).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Student ID / Roll Number '{student_in.id}' is already registered."
+        )
+    
+    student_data = student_in.model_dump()
+    student_data["institution_id"] = inst.id
+
+    student = Student(**student_data)
+    # Precompute readiness
+    readiness_calc = compute_student_readiness(student)
+    student.readiness_score = readiness_calc.readiness_score
+    student.readiness_tier = readiness_calc.tier
+
+    db.add(student)
+    db.commit()
+    db.refresh(student)
+    return student
+
+@router.get("/institutions/{identifier}/recruiters", response_model=List[RecruiterResponse], tags=["Institution"])
+def list_institution_recruiters(identifier: str, db: Session = Depends(get_db)):
+    """Retrieve corporate recruiters active at this institution."""
+    inst = resolve_institution(identifier, db)
+    is_default = inst.id in ["inst-001", "apex-inst"]
+
+    recruiters = db.query(Recruiter).filter(
+        (Recruiter.institution_id == inst.id) | (Recruiter.institution_id.is_(None) if is_default else False)
+    ).all()
+
+    results = []
+    for rec in recruiters:
+        job_count = db.query(Job).filter(Job.recruiter_id == rec.id).count()
+        results.append(RecruiterResponse(
+            id=rec.id,
+            institution_id=rec.institution_id,
+            name=rec.name,
+            company_name=rec.company_name,
+            email=rec.email,
+            designation=rec.designation,
+            created_at=rec.created_at.isoformat() if rec.created_at else None,
+            active_jobs_count=job_count
+        ))
+    return results
+
+@router.post("/institutions/{identifier}/recruiters", response_model=RecruiterResponse, status_code=status.HTTP_201_CREATED, tags=["Institution"])
+def register_institution_recruiter(identifier: str, rec_in: RecruiterCreate, db: Session = Depends(get_db)):
+    """
+    Register a recruiter for placement drives at a specific institution.
+    Can also optionally post an initial job drive for that company.
+    """
+    inst = resolve_institution(identifier, db)
+    recruiter_id = f"REC-{uuid.uuid4().hex[:6].upper()}"
+
+    # Ensure company exists in directory
+    existing_co = db.query(Company).filter(Company.name.ilike(rec_in.company_name.strip())).first()
+    if not existing_co:
+        db.add(Company(
+            id=f"COMP-{uuid.uuid4().hex[:6].upper()}",
+            name=rec_in.company_name.strip(),
+            tier="Tier 1"
+        ))
+        db.commit()
+
+    recruiter = Recruiter(
+        id=recruiter_id,
+        institution_id=inst.id,
+        name=rec_in.name.strip(),
+        company_name=rec_in.company_name.strip(),
+        email=rec_in.email.strip(),
+        designation=rec_in.designation
+    )
+    db.add(recruiter)
+    db.commit()
+    db.refresh(recruiter)
+
+    jobs_created = 0
+    if rec_in.initial_job_title:
+        job_id = f"JOB-{uuid.uuid4().hex[:6].upper()}"
+        initial_job = Job(
+            id=job_id,
+            company=rec_in.company_name.strip(),
+            title=rec_in.initial_job_title.strip(),
+            minimum_cgpa=rec_in.initial_job_min_cgpa or 7.0,
+            eligible_branches=rec_in.initial_job_branches or ["CSE", "IT", "ECE"],
+            max_backlogs=0,
+            graduation_years=[2027],
+            required_skills=rec_in.initial_job_skills or ["Python", "Algorithms"],
+            institution_id=inst.id,
+            recruiter_id=recruiter.id
+        )
+        db.add(initial_job)
+        db.commit()
+        jobs_created = 1
+
+    return RecruiterResponse(
+        id=recruiter.id,
+        institution_id=recruiter.institution_id,
+        name=recruiter.name,
+        company_name=recruiter.company_name,
+        email=recruiter.email,
+        designation=recruiter.designation,
+        created_at=recruiter.created_at.isoformat() if recruiter.created_at else None,
+        active_jobs_count=jobs_created
+    )
+
+@router.get("/institutions/{identifier}/recruiters/{recruiter_id}", tags=["Institution"])
+def get_institution_recruiter(identifier: str, recruiter_id: str, db: Session = Depends(get_db)):
+    """Retrieve recruiter profile and active job postings for that company."""
+    inst = resolve_institution(identifier, db)
+    recruiter = db.query(Recruiter).filter(
+        Recruiter.id == recruiter_id,
+        (Recruiter.institution_id == inst.id) | (Recruiter.institution_id.is_(None) if inst.id in ["inst-001", "apex-inst"] else False)
+    ).first()
+
+    if not recruiter:
+        # Fallback search by id only
+        recruiter = db.query(Recruiter).filter(Recruiter.id == recruiter_id).first()
+
+    if not recruiter:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Recruiter '{recruiter_id}' not found.")
+
+    jobs = db.query(Job).filter(
+        (Job.recruiter_id == recruiter.id) | (Job.company.ilike(recruiter.company_name))
+    ).all()
+
+    return {
+        "recruiter": RecruiterResponse(
+            id=recruiter.id,
+            institution_id=recruiter.institution_id,
+            name=recruiter.name,
+            company_name=recruiter.company_name,
+            email=recruiter.email,
+            designation=recruiter.designation,
+            created_at=recruiter.created_at.isoformat() if recruiter.created_at else None,
+            active_jobs_count=len(jobs)
+        ),
+        "jobs": [JobRequirements.model_validate(j) for j in jobs]
+    }
+
+@router.get("/institutions/{identifier}/jobs", response_model=List[JobRequirements], tags=["Institution"])
+def list_institution_jobs(identifier: str, db: Session = Depends(get_db)):
+    """Retrieve campus job drives active at this institution."""
+    inst = resolve_institution(identifier, db)
+    is_default = inst.id in ["inst-001", "apex-inst"]
+
+    jobs = db.query(Job).filter(
+        (Job.institution_id == inst.id) | (Job.institution_id.is_(None) if is_default else False)
+    ).all()
+    if not jobs and is_default:
+        jobs = db.query(Job).all()
+    return jobs
+
+# --- Legacy Global Institution Stats (for backwards compatibility) ---
+@router.get("/institution/stats", tags=["Institution"])
+def get_institution_stats(db: Session = Depends(get_db)):
+    """Return global cohort readiness distribution and stats."""
+    return get_scoped_institution_stats("inst-001", db)
+
 

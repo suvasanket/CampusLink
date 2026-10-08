@@ -9,7 +9,7 @@ if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
 from app.db.session import init_db, SessionLocal, active_db_type
-from app.models.entities import Student, Job, Institution, Company
+from app.models.entities import Student, Job, Institution, Company, Recruiter
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("campuslink.seed")
@@ -25,17 +25,76 @@ def seed_database():
 
     db = SessionLocal()
     try:
-        # 1. Seed Institution Context (Section 21.5 / 39.5)
-        inst_id = "INST001"
-        existing_inst = db.query(Institution).filter(Institution.id == inst_id).first()
-        if not existing_inst:
-            db.add(Institution(
-                id=inst_id,
-                name="Indian Institute of Information Technology",
-                code="IIIT",
-                location="Bengaluru, Karnataka"
-            ))
-            logger.info("Seeded default Institution (INST001)")
+        # 1. Seed Institution Multi-Tenant Profiles
+        institutions_to_seed = [
+            {
+                "id": "inst-001",
+                "username": "apex-inst",
+                "name": "Apex Institute of Technology",
+                "code": "AIT",
+                "location": "Bengaluru, Karnataka",
+                "contact_email": "placements@apex.edu",
+                "admin_name": "Dr. K. S. Sharma",
+                "website": "https://apex.edu",
+                "is_verified": True
+            },
+            {
+                "id": "inst-002",
+                "username": "national-tech",
+                "name": "National Institute of Technology",
+                "code": "NIT",
+                "location": "Surathkal, Karnataka",
+                "contact_email": "placements@nit.edu",
+                "admin_name": "Prof. Anand Rao",
+                "website": "https://nitk.ac.in",
+                "is_verified": True
+            }
+        ]
+
+        for inst_data in institutions_to_seed:
+            existing_inst = db.query(Institution).filter(Institution.id == inst_data["id"]).first()
+            if not existing_inst:
+                db.add(Institution(**inst_data))
+                logger.info(f"Seeded Institution: {inst_data['name']} ({inst_data['username']})")
+            else:
+                existing_inst.username = inst_data["username"]
+                existing_inst.name = inst_data["name"]
+                existing_inst.contact_email = inst_data["contact_email"]
+                existing_inst.admin_name = inst_data["admin_name"]
+
+        # Seed Sample Recruiters
+        recruiters_to_seed = [
+            {
+                "id": "REC001",
+                "institution_id": "inst-001",
+                "name": "Sarah Chen",
+                "company_name": "Google Cloud",
+                "email": "sarah.chen@google.com",
+                "designation": "Principal Technical Recruiter"
+            },
+            {
+                "id": "REC002",
+                "institution_id": "inst-001",
+                "name": "David Miller",
+                "company_name": "Microsoft",
+                "email": "david.miller@microsoft.com",
+                "designation": "University Talent Lead"
+            },
+            {
+                "id": "REC003",
+                "institution_id": "inst-001",
+                "name": "Priya Nair",
+                "company_name": "Amazon AWS",
+                "email": "priya.nair@amazon.com",
+                "designation": "Campus Recruitment Lead"
+            }
+        ]
+
+        for rec_data in recruiters_to_seed:
+            existing_rec = db.query(Recruiter).filter(Recruiter.id == rec_data["id"]).first()
+            if not existing_rec:
+                db.add(Recruiter(**rec_data))
+                logger.info(f"Seeded Recruiter: {rec_data['name']} ({rec_data['company_name']})")
 
         # 2. Seed Jobs
         if os.path.exists(jobs_file):
@@ -68,7 +127,9 @@ def seed_database():
                         required_skills=item.get("required_skills", []),
                         preferred_skills=item.get("preferred_skills", []),
                         responsibilities=item.get("responsibilities", []),
-                        experience_level=item.get("experience_level", "Fresher")
+                        experience_level=item.get("experience_level", "Fresher"),
+                        institution_id="inst-001",
+                        recruiter_id="REC001" if "Google" in item.get("company", "") else ("REC002" if "Microsoft" in item.get("company", "") else "REC003")
                     )
                     db.add(job)
                     jobs_added += 1
@@ -121,7 +182,8 @@ def seed_database():
                         certifications=item.get("certifications", []),
                         assessment=assessment,
                         readiness_score=readiness,
-                        readiness_tier=tier
+                        readiness_tier=tier,
+                        institution_id="inst-001"
                     )
                     db.add(student)
                     students_added += 1
