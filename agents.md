@@ -2,8 +2,8 @@
 
 This document defines the roles, operational boundaries, execution standards, and progression logging protocol for autonomous and human-assisted AI agents collaborating on the **CampusLink** codebase.
 
-**Authoritative Master Specification:** [`new_plan.md`](file:///Users/suvasanketrout/Developer/CampusLink/new_plan.md)  
-**Task Progression File:** [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md)  
+**Authoritative Master Specification:** [`new_plan.md`](file:///Users/suvasanketrout/Developer/CampusLink/new_plan.md)
+**Task Progression File:** [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md)
 *(Note: `init.md` is deprecated and superseded by `new_plan.md`)*
 
 ---
@@ -17,20 +17,20 @@ flowchart TD
     subgraph WORKSPACE["Core System Architecture"]
         DB[(PostgreSQL Primary<br/><i>SQLite Auto-Fallback</i>)]
         BACKEND[Backend Intelligence Monolith<br/><i>FastAPI + SQLAlchemy</i>]
-        
+
         subgraph FRONTEND["Frontend Application (One App, Three Role Contexts)"]
             P_INST[🏛️ Institution Portal<br/><i>Placement Officer View</i>]
             P_STU[🎓 Student Portal<br/><i>Candidate Readiness View</i>]
             P_REC[🏢 Recruiter Portal<br/><i>Candidate Matching View</i>]
         end
-        
+
         AI[Token-Optimized AI Ingestion Layer<br/><i>Gemini / Groq / Local Embeddings / Cache</i>]
     end
 
     COORDINATOR --> BACKEND
     COORDINATOR --> FRONTEND
     COORDINATOR --> AI
-    
+
     AI -->|Validated JSON Contracts| BACKEND
     BACKEND <-->|SQLAlchemy ORM| DB
     BACKEND -->|REST API Endpoints| FRONTEND

@@ -46,19 +46,3 @@ Recruiter JD ──▶ Hard Eligibility Filter ──▶ Semantic Matching ─�
 
 ### 2. Setup And Run
 Look at `makefile`
-
----
-
-## 📂 Repository Layout
-
-```text
-CampusLink/
-├── backend/            # FastAPI backend & matching engine (Agent 1)
-├── frontend/           # React + Vite recruiter dashboard (Agent 2)
-├── ai_pipeline/        # PyMuPDF + LLM extraction & normalizer (Agent 3)
-├── codebase_idx/       # Comprehensive codebase knowledge base
-├── data/               # Seed datasets & sample resumes/JDs
-├── docs/contracts/     # JSON schema specifications
-├── agents.md           # Multi-agent collaboration protocol
-└── README.md           # Project documentation
-```
