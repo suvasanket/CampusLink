@@ -44,31 +44,8 @@ Recruiter JD ──▶ Hard Eligibility Filter ──▶ Semantic Matching ─�
 - Python 3.12+
 - Node.js 18+ and npm
 
-### 2. Backend Setup
-```bash
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r backend/requirements.txt
-
-# Run database seeder (loads data/students.json & data/jobs.json)
-python backend/seed_db.py
-
-# Start FastAPI development server
-uvicorn app.main:app --reload --port 8000
-```
-- API Docs: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
-
-### 3. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-- Web App: `http://localhost:5173`
+### 2. Setup And Run
+Look at `makefile`
 
 ---
 
