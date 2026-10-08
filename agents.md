@@ -1,129 +1,162 @@
 # CampusLink — Multi-Agent Collaboration Protocol & System Roles (`agents.md`)
 
-This document defines the roles, operational boundaries, communication protocols, and execution standards for autonomous and human-assisted AI agents collaborating on the **CampusLink** codebase.
+This document defines the roles, operational boundaries, execution standards, and progression logging protocol for autonomous and human-assisted AI agents collaborating on the **CampusLink** codebase.
+
+**Authoritative Master Specification:** [`new_plan.md`](file:///Users/suvasanketrout/Developer/CampusLink/new_plan.md)  
+**Task Progression File:** [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md)  
+*(Note: `init.md` is deprecated and superseded by `new_plan.md`)*
 
 ---
 
-## 1. Multi-Agent Team Structure
+## 1. System Architecture & Component Roles
 
 ```mermaid
 flowchart TD
-    ORCH[System Architect / Coordinator Agent]
+    COORDINATOR[Master Coordinator / Full-Stack Agent]
 
-    subgraph AGENTS["Specialized Domain Agents"]
-        A1[Agent 1: Backend & Intelligence Lead<br/><i>backend/</i>]
-        A2[Agent 2: Frontend & UX Lead<br/><i>frontend/</i>]
-        A3[Agent 3: AI & Ingestion Lead<br/><i>ai_pipeline/</i>]
+    subgraph WORKSPACE["Core System Architecture"]
+        DB[(PostgreSQL Primary<br/><i>SQLite Auto-Fallback</i>)]
+        BACKEND[Backend Intelligence Monolith<br/><i>FastAPI + SQLAlchemy</i>]
+        
+        subgraph FRONTEND["Frontend Application (One App, Three Role Contexts)"]
+            P_INST[🏛️ Institution Portal<br/><i>Placement Officer View</i>]
+            P_STU[🎓 Student Portal<br/><i>Candidate Readiness View</i>]
+            P_REC[🏢 Recruiter Portal<br/><i>Candidate Matching View</i>]
+        end
+        
+        AI[Token-Optimized AI Ingestion Layer<br/><i>Gemini / Groq / Local Embeddings / Cache</i>]
     end
 
-    ORCH --> A1
-    ORCH --> A2
-    ORCH --> A3
-
-    A3 -->|Validated JSON Contracts| A1
-    A1 -->|REST API Contracts| A2
+    COORDINATOR --> BACKEND
+    COORDINATOR --> FRONTEND
+    COORDINATOR --> AI
+    
+    AI -->|Validated JSON Contracts| BACKEND
+    BACKEND <-->|SQLAlchemy ORM| DB
+    BACKEND -->|REST API Endpoints| FRONTEND
 ```
 
 ---
 
-## 2. Agent Roles and Boundaries
+## 2. Core Execution Principles & System Rules
 
-### 2.1. Agent 1: Backend & Intelligence Engine Lead (Dev 1)
-- **Primary Ownership:** `backend/`, `backend/app/`, `backend/tests/`
-- **Core Mission:** Deliver the intelligence pipeline and robust REST API endpoints.
-- **Key Responsibilities:**
-  1. Build FastAPI application structure, database models (SQLAlchemy), and Pydantic schemas.
-  2. Implement **Hard Eligibility Engine**: Deterministic rules (CGPA, branch, backlogs) with explicit pass/fail reasons.
-  3. Implement **Semantic Matching & Scoring Engine**: Vector similarity (embeddings) combined with weighted scoring (Skills 40%, Projects 20%, Academics 15%, Assessment 10%, Certifications 10%, Communication 5%).
-  4. Expose `GET /jobs/{job_id}/matches`, `POST /jobs/parse`, `GET /students/{id}/readiness`, `GET /students/{id}/skill-gaps/{job_id}`.
-  5. Provide seed database loader and fallback mock responses.
-- **Strict Boundary:**
-  - Do NOT modify `frontend/` or `ai_pipeline/` files directly.
-  - Do NOT delegate arithmetic, CGPA filtering, or score sorting to an LLM.
-
----
-
-### 2.2. Agent 2: Frontend & UX Lead (Dev 2)
-- **Primary Ownership:** `frontend/`
-- **Core Mission:** Deliver a high-clarity placement officer & recruiter web interface.
-- **Key Responsibilities:**
-  1. Scaffold modern React + Vite + Tailwind CSS interface.
-  2. Build **Recruiter Job View**: Job specification display, candidate ranking table, and filter controls.
-  3. Build **Candidate Card & Details Modal**: Display match score (0–100), categorization badge (*Highly Suitable*, *Suitable*, *Potential Fit*), factor breakdown bars, and explanation summary.
-  4. Build **Skill Gap & Readiness Dashboard**: Visual breakdown of missing required vs preferred skills, and student readiness tiers.
-  5. Consume backend strictly via `docs/contracts/` schemas; use local JSON mocks when backend is offline.
-- **Strict Boundary:**
-  - Do NOT create direct dependencies on backend Python code or AI pipeline scripts.
-  - Rely exclusively on HTTP REST API contracts.
+### Rule 1: One Unified System, Three Portal Views (Do NOT Split Portals)
+Per Section 39.5 of `new_plan.md`:
+- The three portals (**Institution**, **Student**, **Company/Recruiter**) are a **product presentation decision**, NOT a reason to create three separate repositories, three backends, or three databases.
+- Maintain:
+  - **One repository**
+  - **One backend**
+  - **One database**
+  - **One shared intelligence layer**
+  - **Three route/role contexts** in the single React + Vite + TypeScript frontend.
+- When implementing a feature:
+  - If it is domain logic (eligibility, scoring, matching, readiness, skill gaps), implement it once in `backend/app/services/`.
+  - If it is presentation, adapt it in the corresponding portal component.
 
 ---
 
-### 2.3. Agent 3: AI Pipeline & Ingestion Lead (Dev 3)
-- **Primary Ownership:** `ai_pipeline/`, `data/sample_jds/`, `data/sample_resumes/`
-- **Core Mission:** Extract unstructured resumes and JDs into structured, validated JSON.
-- **Key Responsibilities:**
-  1. PDF text extraction via PyMuPDF (`fitz`).
-  2. LLM prompts (Google Gemini) for extracting structured student profiles and recruiter JDs.
-  3. **Skill Normalization & Taxonomy**: Standardize variants (`ReactJS` $\to$ `React`, `Postgres` $\to$ `PostgreSQL`, `FastAPI` $\to$ `FastAPI`).
-  4. Validate output payloads against `docs/contracts/student.schema.json` and `docs/contracts/job.schema.json`.
-  5. Provide offline fixture fallbacks if LLM APIs encounter rate limits or network downtime.
-- **Strict Boundary:**
-  - Do NOT handle candidate scoring or DB persistence directly.
-  - Produce clean, contract-compliant JSON payloads for Agent 1 to ingest.
+### Rule 2: The Deterministic vs. AI Separation Boundary
+Never delegate objective rules or mathematical scoring to an LLM.
 
----
-
-## 3. Strict Operational Rules & Principles
-
-### Rule 1: The Deterministic vs. AI Separation Boundary
 | Feature | Implementation Mode | Permitted Tools |
 | :--- | :--- | :--- |
 | **CGPA Check** | Deterministic | Python relational comparison (`cgpa >= min_cgpa`) |
 | **Branch Eligibility** | Deterministic | Set membership (`student.branch in eligible_branches`) |
 | **Backlog Check** | Deterministic | Comparison (`backlogs <= max_backlogs`) |
-| **Weighted Score** | Deterministic | Float arithmetic dot-product |
+| **Weighted Score** | Deterministic | 6-factor float arithmetic dot-product |
 | **Rank Sorting** | Deterministic | `sorted(candidates, key=lambda c: c.score, reverse=True)` |
-| **JD / Resume Extraction** | AI / Semantic | PyMuPDF + LLM (Gemini) JSON schema extraction |
-| **Skill Synonyms** | Hybrid | Taxonomy dictionary lookup + embedding similarity |
-| **Project Relevance** | AI / Semantic | SentenceTransformer / Gemini embedding cosine similarity |
-| **Natural Language Explanations** | AI / Semantic | LLM summary prompt with strict ground truth injection |
-
-### Rule 2: Contract-First Development
-- Every agent must adhere to schemas in [`docs/contracts/`](file:///Users/suvasanketrout/developer/CampusLink/docs/contracts).
-- Any contract change requires explicit synchronization across all agents before code changes are made.
-
-### Rule 3: Zero-Blocker Local Execution
-- **Docker is optional**: The entire prototype must boot and run natively on macOS/Linux using Python 3.12 (`venv`) and Node.js (`npm`).
-- SQLite is supported out-of-the-box for local testing, with simple configuration toggle to PostgreSQL.
-- Local embeddings (e.g. `all-MiniLM-L6-v2` or sklearn cosine similarity) must provide offline search without mandatory cloud API tokens.
-
-### Rule 4: Mandatory Fixture Fallback
-- If an LLM call fails, the pipeline must seamlessly fall back to static fixtures in [`data/`](file:///Users/suvasanketrout/developer/CampusLink/data) so that the live demo is never interrupted.
+| **Candidate Embeddings** | Local Vector Model | SentenceTransformers (`all-MiniLM-L6-v2`) / scikit-learn cosine similarity (**0 API tokens**) |
+| **Grounded Explanations** | Deterministic / Grounded | Fact-based summary template from score breakdown |
+| **JD / Resume Extraction** | AI / Semantic | PyMuPDF + Gemini / Groq with SHA-256 caching |
+| **Skill Synonyms** | Hybrid | Taxonomy normalization dictionary + embedding similarity |
 
 ---
 
-## 4. Day-by-Day Integration Gates
-
-- **Day 1 (Independent Foundations):**
-  - All agents code against contract schemas.
-  - Agent 1 boots backend with mock responses.
-  - Agent 2 builds UI layout with fixture data.
-  - Agent 3 tests parser with static test files.
-- **Day 2 (Ingestion Gate):**
-  - Agent 3 outputs validated JSON. Agent 1 ingests into DB.
-- **Day 3 (Core End-to-End Gate - CRITICAL):**
-  - Full flow: Recruiter selects JD $\to$ Backend filters & scores candidates $\to$ Frontend renders ranked candidate list.
-- **Day 4 (Diagnostics Gate):**
-  - Explanations, skill gaps, and readiness metrics connected to UI.
-- **Day 5 (Freeze & Polish):**
-  - Code freeze on architecture; polish loading states, badges, demo scripts, and tests.
+### Rule 3: Execution Staging — UI & Core Architecture First
+To maximize platform stability and user experience:
+1. **Stage 1 (Data & Persistence):** PostgreSQL primary + SQLite auto-fallback, SQLAlchemy models, Pydantic schemas, and expanded seed data (30+ students, 6 jobs).
+2. **Stage 2 (Backend Intelligence):** Hard eligibility, 6-factor scoring, vector matching, skill gaps, readiness engine, and REST APIs.
+3. **Stage 3 (Frontend Three-Portal Web App):** React + Vite + TypeScript + Tailwind CSS with top-level portal switcher (Institution, Student, Recruiter).
+4. **Stage 4 (AI Ingestion & Parsing):** Pluggable multi-provider adapter (Gemini / Groq / local fixtures) with SHA-256 caching and minimal token consumption.
 
 ---
 
-## 5. Agent Instructions for Context Retrieval
+### Rule 4: Database Policy — PostgreSQL Primary with SQLite Fallback
+- The system must configure and attempt connection to **PostgreSQL** (`postgresql://localhost:5432/campuslink`) as its primary database.
+- If PostgreSQL is not running or connection fails, the session manager must **automatically and seamlessly fall back to SQLite** (`sqlite:///./campuslink.db`) with clear logging.
+- The platform must never fail to boot due to database connectivity issues.
 
-When any agent starts a task or needs specific information about the codebase:
-1. **Always consult [`codebase_idx/README.md`](file:///Users/suvasanketrout/developer/CampusLink/codebase_idx/README.md)** first to locate the authoritative reference.
-2. Read [`codebase_idx/contracts.md`](file:///Users/suvasanketrout/developer/CampusLink/codebase_idx/contracts.md) before writing API models or endpoints.
-3. Read [`codebase_idx/intelligence_engine.md`](file:///Users/suvasanketrout/developer/CampusLink/codebase_idx/intelligence_engine.md) before altering scoring weights or eligibility filters.
-4. Check [`codebase_idx/directory_map.md`](file:///Users/suvasanketrout/developer/CampusLink/codebase_idx/directory_map.md) to preserve module boundaries.
+---
+
+### Rule 5: Token Conservation & Free-Tier AI Abstraction
+- The AI layer must be provider-agnostic and suitable for any free-tier provider (**Google Gemini**, **Groq Cloud**, or **OpenAI-compatible** APIs).
+- **Matching is 100% token-free**: Candidate-to-job semantic similarity must run on local embeddings (`all-MiniLM-L6-v2`) or scikit-learn.
+- **SHA-256 Caching**: Resume and JD extractions must be cached by content hash to disk/memory so duplicate documents consume 0 tokens.
+- **Fixture Fallback**: If external LLM APIs fail or encounter rate limits (HTTP 429), the parser must immediately return pre-parsed fixture data from `data/`.
+
+---
+
+### Rule 6: Mandatory Task Progression Logging
+- Any agent or developer working on the codebase **must log every significant step, completed task, and environment event** into [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md).
+- Keep the milestone table and task checklist in [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md) updated continuously.
+
+---
+
+## 3. Directory Map & Ownership Responsibilities
+
+```text
+campuslink/
+├── new_plan.md               # Master root specification (supersedes init.md)
+├── agents.md                 # System collaboration rules & protocols (this file)
+├── TASK_PROGRESSION.md       # Live execution & task progression tracker
+├── docs/contracts/           # Formal JSON schema contracts
+│   ├── student.schema.json
+│   ├── job.schema.json
+│   └── match.schema.json
+├── data/                     # Seed datasets & sample fixtures
+│   ├── students.json         # 30+ diverse student profiles
+│   ├── jobs.json             # 6 diverse job postings
+│   ├── sample_jds/           # Raw JD texts/PDFs
+│   └── sample_resumes/       # Raw resume PDFs
+├── backend/                  # Intelligence engine & FastAPI monolith
+│   ├── app/
+│   │   ├── api/              # REST route controllers
+│   │   ├── core/             # Configuration & environment settings
+│   │   ├── db/               # PostgreSQL / SQLite resilient session manager
+│   │   ├── models/           # SQLAlchemy database entities
+│   │   ├── schemas/          # Pydantic v2 validation contracts
+│   │   └── services/         # Intelligence business logic
+│   │       ├── eligibility.py
+│   │       ├── embeddings.py
+│   │       ├── scoring.py
+│   │       ├── explanations.py
+│   │       ├── recommendations.py
+│   │       └── matching.py
+│   ├── tests/                # Automated pytest suite
+│   ├── requirements.txt      # Python dependencies
+│   └── seed_db.py            # Database loader script
+├── frontend/                 # Recruiter & Student web interface
+│   ├── src/
+│   │   ├── components/       # Shared UI widgets (CandidateCard, Modal, Navbar)
+│   │   ├── pages/            # InstitutionPortal, StudentPortal, RecruiterPortal
+│   │   ├── services/         # API client adapters with fallback mocks
+│   │   ├── App.tsx           # App entrypoint & Portal routing
+│   │   └── main.tsx          # DOM root
+│   ├── package.json          # Vite + React + TS dependencies
+│   └── vite.config.ts        # Bundler configuration
+└── ai_pipeline/              # Multi-provider AI ingestion & parsing
+    ├── parsers/              # PyMuPDF + LLM extractors
+    ├── normalizers/          # Skill taxonomy normalizer
+    ├── cache/                # SHA-256 disk extraction cache
+    └── providers/            # Gemini, Groq, and Fallback adapters
+```
+
+---
+
+## 4. Context Retrieval Hierarchy
+
+Before modifying code or adding features:
+1. Check [`TASK_PROGRESSION.md`](file:///Users/suvasanketrout/Developer/CampusLink/TASK_PROGRESSION.md) for current phase and open tasks.
+2. Consult [`new_plan.md`](file:///Users/suvasanketrout/Developer/CampusLink/new_plan.md) for architectural and business intent.
+3. Consult [`codebase_idx/contracts.md`](file:///Users/suvasanketrout/Developer/CampusLink/codebase_idx/contracts.md) before altering schemas.
+4. Consult [`codebase_idx/intelligence_engine.md`](file:///Users/suvasanketrout/Developer/CampusLink/codebase_idx/intelligence_engine.md) for exact 6-factor mathematical formulas.
