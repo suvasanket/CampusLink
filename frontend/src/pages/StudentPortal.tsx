@@ -246,32 +246,34 @@ export const StudentPortal: React.FC = () => {
     <div className="space-y-8 animate-fadeIn">
       
       {/* Student Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-800 to-slate-900 border border-slate-700/80 p-6 sm:p-8 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="max-w-2xl">
-            <div className="flex items-center space-x-2 text-xs font-semibold mb-3">
-              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <GraduationCap className="w-3.5 h-3.5" />
-                <span>Student Career Readiness Portal</span>
+      <div className="relative overflow-hidden rounded-3xl bg-[#0e111a] border border-white/[0.08] p-6 sm:p-8 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.08)]">
+        <div className="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="max-w-2xl space-y-3">
+            <div className="flex items-center space-x-2 text-xs mb-3">
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono text-[11px] uppercase tracking-wider">
+                <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Student Career Readiness Diagnostic</span>
               </span>
               <button
                 onClick={() => navigate(`/${institution?.username || institutionId || 'apex-inst'}`)}
-                className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+                className="font-mono text-xs text-slate-400 hover:text-emerald-300 transition-colors"
               >
-                ← {institution?.name || 'Campus Dashboard'}
+                ← {institution?.name || 'Campus Control Desk'}
               </button>
             </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight leading-tight">
               Candidate Diagnostic & Skill Roadmap
             </h1>
-            <p className="text-slate-300 text-sm mt-2 leading-relaxed">
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               Enrolled under <strong className="text-emerald-300">{institution?.name || 'Institution Campus'}</strong>.
-              Permanent URL: <span className="font-mono text-emerald-400 text-xs">/{institution?.username || institutionId || 'apex-inst'}/student/{selectedStudentId}</span>
+              Console URL: <span className="font-mono text-emerald-400 text-xs">/{institution?.username || institutionId || 'apex-inst'}/student/{selectedStudentId}</span>
             </p>
           </div>
 
           {/* Action & Student Selector */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/80 shrink-0 space-y-3">
+          <div className="bg-[#121622] p-4 rounded-2xl border border-white/[0.06] shrink-0 space-y-3">
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">

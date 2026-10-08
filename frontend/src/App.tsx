@@ -69,19 +69,22 @@ export const App: React.FC = () => {
           </Routes>
         </main>
 
-        {/* Global Minimal Footer */}
-        <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-400">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Global Minimal Studio Footer */}
+        <footer className="border-t border-white/[0.06] bg-[#090a0f] py-6 text-xs text-slate-400 font-mono">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-slate-300">CampusLink</span>
-              <span>—</span>
-              <span>AI-Assisted University Placement Intelligence Platform</span>
+              <span className="font-display font-semibold text-white">CampusLink</span>
+              <span className="text-slate-600">//</span>
+              <span className="text-slate-400">Deterministic University Placement Intelligence Monolith</span>
             </div>
-            <div className="flex items-center space-x-4 text-[11px] text-slate-400">
-              <span>FastAPI Backend Monolith</span>
-              <span>•</span>
-              <span className="capitalize">{dbType} Storage Engine</span>
-              <span>•</span>
+            <div className="flex items-center space-x-3 text-[11px] text-slate-400">
+              <span className="flex items-center space-x-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
+                <span className="capitalize">{dbType} Storage Engine</span>
+              </span>
+              <span className="text-slate-600">•</span>
+              <span>FastAPI Monolith</span>
+              <span className="text-slate-600">•</span>
               <span>Multi-Tenant Architecture</span>
             </div>
           </div>
