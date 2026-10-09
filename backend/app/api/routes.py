@@ -25,11 +25,23 @@ from app.schemas.entities import (
     InstitutionLoginRequest,
     InstitutionLoginResponse,
     RecruiterCreate,
-    RecruiterResponse
+    RecruiterResponse,
+    AutoShortlistCriteria,
+    AutoShortlistPreviewResponse,
+    AutoShortlistExecuteResponse,
+    BulkShortlistRequest,
+    BulkClearShortlistRequest
 )
 from app.core.security import hash_password, verify_password
 from app.services.matching import match_candidates_for_job
 from app.services.recommendations import compute_student_readiness, compute_skill_gaps
+from app.services.shortlisting import (
+    compute_auto_shortlist_preview,
+    execute_auto_shortlist,
+    bulk_shortlist_students,
+    clear_job_shortlists
+)
+
 
 logger = logging.getLogger("campuslink.api")
 router = APIRouter()
@@ -326,7 +338,113 @@ def delete_application(app_id: int, db: Session = Depends(get_db)):
     db.commit()
     return None
 
+# --- Auto-Shortlisting & Batch Recruitment Endpoints ---
+
+def get_candidate_students_for_job(db: Session, job: Job, institution_id: Optional[str] = None) -> List[Student]:
+    """Retrieve cohort candidate students scoped to job's institution or specified institution."""
+    target_inst = institution_id or job.institution_id
+    if target_inst:
+        inst_obj = db.query(Institution).filter(
+            (Institution.id == target_inst) | (Institution.username == target_inst)
+        ).first()
+        target_id = inst_obj.id if inst_obj else target_inst
+        students = db.query(Student).filter(
+            (Student.institution_id == target_id) | 
+            (Student.institution_id.is_(None) if target_id in ["inst-001", "apex-inst"] else False)
+        ).all()
+        if not students:
+            students = db.query(Student).all()
+    else:
+        students = db.query(Student).all()
+    return students
+
+@router.post("/jobs/{job_id}/auto-shortlist/preview", response_model=AutoShortlistPreviewResponse, tags=["Shortlisting"])
+def preview_auto_shortlist(
+    job_id: str,
+    criteria: AutoShortlistCriteria,
+    db: Session = Depends(get_db)
+):
+    """
+    Simulates auto-shortlisting rules and returns live cohort telemetry & candidate roster
+    without committing any changes to the database.
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{job_id}' not found.")
+    
+    students = get_candidate_students_for_job(db, job, criteria.institution_id)
+    existing_shortlists = db.query(Application.student_id).filter(
+        Application.job_id == job_id,
+        Application.status.in_(["Shortlisted", "Interview", "Offered"])
+    ).all()
+    existing_ids = {row[0] for row in existing_shortlists}
+    
+    return compute_auto_shortlist_preview(job, students, criteria, existing_ids)
+
+@router.post("/jobs/{job_id}/auto-shortlist", response_model=AutoShortlistExecuteResponse, status_code=status.HTTP_200_OK, tags=["Shortlisting"])
+def run_auto_shortlist(
+    job_id: str,
+    criteria: AutoShortlistCriteria,
+    db: Session = Depends(get_db)
+):
+    """
+    Executes deterministic auto-shortlisting and commits applications idempotently.
+    Candidates already shortlisted are retained without duplication.
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{job_id}' not found.")
+    
+    students = get_candidate_students_for_job(db, job, criteria.institution_id)
+    return execute_auto_shortlist(db, job, students, criteria)
+
+@router.post("/jobs/{job_id}/bulk-shortlist", response_model=AutoShortlistExecuteResponse, tags=["Shortlisting"])
+def run_bulk_shortlist(
+    job_id: str,
+    req: BulkShortlistRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Shortlists a custom batch of candidate IDs (e.g. from manual multi-select checkboxes).
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{job_id}' not found.")
+    
+    total, new_count, app_ids = bulk_shortlist_students(db, job, req.student_ids, req.notes)
+    already_count = total - new_count
+    return AutoShortlistExecuteResponse(
+        job_id=job.id,
+        total_shortlisted=total,
+        newly_shortlisted_count=new_count,
+        already_shortlisted_count=already_count,
+        message=f"Bulk-shortlisted {new_count} new candidates ({already_count} already shortlisted).",
+        application_ids=app_ids
+    )
+
+@router.post("/jobs/{job_id}/clear-shortlist", tags=["Shortlisting"])
+def run_clear_shortlist(
+    job_id: str,
+    req: Optional[BulkClearShortlistRequest] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Clears all or selected shortlisted candidates for a job.
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{job_id}' not found.")
+    
+    student_ids = req.student_ids if req else None
+    deleted_count = clear_job_shortlists(db, job.id, student_ids)
+    return {
+        "job_id": job.id,
+        "deleted_count": deleted_count,
+        "message": f"Successfully cleared {deleted_count} candidate shortlists."
+    }
+
 # --- Institution & Multi-Tenant Scoping Endpoints ---
+
 
 def resolve_institution(identifier: str, db: Session) -> Institution:
     """Find institution by either its internal ID or vanity username slug."""

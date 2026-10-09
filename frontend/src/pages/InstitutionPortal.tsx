@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { InstitutionStats, StudentProfile, JobRequirements, ApplicationRecord, Institution, Recruiter } from '../types';
+import { AutoShortlistModal } from '../components/AutoShortlistModal';
 import { authService } from '../services/auth';
 import logoImg from '../assets/logo.png';
 import {
@@ -26,8 +27,10 @@ import {
   KeyRound,
   LogIn,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
+
 
 export const InstitutionPortal: React.FC = () => {
   const { institutionId } = useParams<{ institutionId?: string }>();
@@ -57,6 +60,16 @@ export const InstitutionPortal: React.FC = () => {
 
   // Link copy toast
   const [copiedLink, setCopiedLink] = useState<'student' | 'recruiter' | null>(null);
+
+  // Auto-shortlist modal state
+  const [autoShortlistJob, setAutoShortlistJob] = useState<JobRequirements | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
 
   useEffect(() => {
     const handleAuthChange = () => {
@@ -625,8 +638,89 @@ export const InstitutionPortal: React.FC = () => {
         )}
       </div>
 
+      {/* Campus Placement Drives & Auto-Shortlisting Panel */}
+      <div className="p-6 rounded-3xl bg-[#0e111a] border border-white/[0.08] space-y-4 shadow-[0_15px_35px_-15px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.06)]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-emerald-400 font-display font-semibold text-sm">
+            <Zap className="w-4 h-4 fill-emerald-400 text-emerald-400" />
+            <h2 className="text-sm font-mono font-semibold uppercase tracking-wider text-slate-200">
+              Campus Placement Drives & Auto-Shortlisting ({jobs.length})
+            </h2>
+          </div>
+          <span className="text-[11px] font-mono text-slate-400">
+            Automated Candidate Qualification for Placement Officers
+          </span>
+        </div>
+
+        {jobs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {jobs.map(jobItem => (
+              <div
+                key={jobItem.id}
+                className="p-5 rounded-2xl bg-[#121622] border border-white/[0.06] flex flex-col justify-between space-y-3.5 hover:border-emerald-500/30 transition-all shadow-sm"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-display font-bold text-white text-sm">
+                        {jobItem.title}
+                      </h3>
+                      <div className="text-xs text-emerald-300 font-mono mt-0.5">
+                        {jobItem.company}
+                      </div>
+                    </div>
+                    <span className="font-mono text-[10.5px] px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.08]">
+                      CGPA ≥ {jobItem.minimum_cgpa.toFixed(1)}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-400 mt-2 line-clamp-2">
+                    {jobItem.description || 'Campus recruitment drive looking for qualified students.'}
+                  </p>
+
+                  <div className="flex flex-wrap gap-1.5 pt-2.5">
+                    {jobItem.required_skills?.slice(0, 3).map((sk, idx) => (
+                      <span
+                        key={idx}
+                        className="font-mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
+                      >
+                        {sk}
+                      </span>
+                    ))}
+                    {(jobItem.required_skills?.length || 0) > 3 && (
+                      <span className="font-mono text-[10px] text-slate-500 self-center">
+                        +{(jobItem.required_skills?.length || 0) - 3} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/[0.04] flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-slate-500">
+                    Branches: {jobItem.eligible_branches?.join(', ') || 'All'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAutoShortlistJob(jobItem)}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center space-x-1.5 transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <Zap className="w-3.5 h-3.5 fill-emerald-400 text-emerald-400" />
+                    <span>⚡ Auto-Shortlist</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-5 rounded-2xl bg-[#121622]/60 border border-white/[0.05] text-xs text-slate-400 font-mono italic">
+            No active placement drives registered yet.
+          </div>
+        )}
+      </div>
+
       {/* Student Directory Table with Filters & CSV Export */}
       <div className="p-6 rounded-3xl bg-[#0e111a] border border-white/[0.08] space-y-4 shadow-[0_15px_35px_-15px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.06)]">
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-bold text-white tracking-tight">Student Placement Directory</h2>
@@ -744,6 +838,29 @@ export const InstitutionPortal: React.FC = () => {
         </div>
       </div>
 
+      {/* Auto-Shortlist Modal */}
+      {autoShortlistJob && (
+        <AutoShortlistModal
+          job={autoShortlistJob}
+          isOpen={!!autoShortlistJob}
+          onClose={() => setAutoShortlistJob(null)}
+          onSuccess={(msg) => {
+            showToast(msg);
+            loadData(activeIdentifier);
+          }}
+          institutionId={activeIdentifier}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#121622] border border-emerald-500/40 text-emerald-200 text-xs font-mono px-4 py-3 rounded-2xl shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_15px_rgba(16,185,129,0.2)] flex items-center space-x-2 animate-fadeIn">
+          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
     </div>
   );
 };
+

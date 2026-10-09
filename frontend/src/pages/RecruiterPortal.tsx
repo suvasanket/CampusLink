@@ -4,7 +4,24 @@ import { api } from '../services/api';
 import { JobRequirements, JobMatchResult, CandidateMatchItem, ApplicationRecord, Recruiter, Institution } from '../types';
 import { CandidateCard } from '../components/CandidateCard';
 import { CandidateModal } from '../components/CandidateModal';
-import { Briefcase, Filter, Search, Users, Sparkles, AlertCircle, RefreshCw, Star, Download, Sliders, PlusCircle, ArrowLeft } from 'lucide-react';
+import { AutoShortlistModal } from '../components/AutoShortlistModal';
+import {
+  Briefcase,
+  Filter,
+  Search,
+  Users,
+  Sparkles,
+  AlertCircle,
+  RefreshCw,
+  Star,
+  Download,
+  Sliders,
+  PlusCircle,
+  ArrowLeft,
+  Zap,
+  Check,
+  Trash2
+} from 'lucide-react';
 import { authService } from '../services/auth';
 
 export const RecruiterPortal: React.FC = () => {
@@ -22,6 +39,17 @@ export const RecruiterPortal: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [evaluating, setEvaluating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Selection & Auto-Shortlist Modal state
+  const [isAutoShortlistOpen, setIsAutoShortlistOpen] = useState<boolean>(false);
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(new Set());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
 
   // Filter state
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -127,6 +155,7 @@ export const RecruiterPortal: React.FC = () => {
           delete next[candidate.student_id];
           return next;
         });
+        showToast(`Removed ${candidate.student_name} from shortlist.`);
       } catch (err) {
         console.error('Failed to remove shortlist:', err);
       }
@@ -144,11 +173,72 @@ export const RecruiterPortal: React.FC = () => {
           ...prev,
           [candidate.student_id]: created.id
         }));
+        showToast(`Shortlisted ${candidate.student_name}.`);
       } catch (err) {
         console.error('Failed to shortlist candidate:', err);
       }
     }
   };
+
+  const handleToggleSelectCandidate = (candidate: CandidateMatchItem) => {
+    setSelectedCandidateIds(prev => {
+      const next = new Set(prev);
+      if (next.has(candidate.student_id)) {
+        next.delete(candidate.student_id);
+      } else {
+        next.add(candidate.student_id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    const eligibleFiltered = filteredCandidates.filter(c => c.eligible);
+    const allSelected =
+      eligibleFiltered.length > 0 &&
+      eligibleFiltered.every(c => selectedCandidateIds.has(c.student_id));
+    if (allSelected) {
+      setSelectedCandidateIds(new Set());
+    } else {
+      setSelectedCandidateIds(new Set(eligibleFiltered.map(c => c.student_id)));
+    }
+  };
+
+  const handleBulkShortlistSelected = async () => {
+    if (!selectedJobId || selectedCandidateIds.size === 0) return;
+    try {
+      const ids = Array.from(selectedCandidateIds);
+      const res = await api.bulkShortlist(selectedJobId, ids);
+      showToast(res.message);
+      await loadApplications(selectedJobId);
+      setSelectedCandidateIds(new Set());
+    } catch (err: any) {
+      console.error('Failed to bulk shortlist:', err);
+      showToast(err.message || 'Failed to bulk shortlist candidates.');
+    }
+  };
+
+  const handleClearShortlists = async () => {
+    if (!selectedJobId) return;
+    if (!window.confirm('Are you sure you want to clear all candidate shortlists for this requisition?')) return;
+    try {
+      const res = await api.clearJobShortlists(selectedJobId);
+      showToast(`Cleared ${res.deleted_count} candidate shortlists.`);
+      await loadApplications(selectedJobId);
+      setSelectedCandidateIds(new Set());
+    } catch (err: any) {
+      console.error('Failed to clear shortlists:', err);
+      showToast('Failed to clear shortlists.');
+    }
+  };
+
+  const handleAutoShortlistSuccess = (msg: string) => {
+    showToast(msg);
+    if (selectedJobId) {
+      loadApplications(selectedJobId);
+    }
+  };
+
 
   const handleExportCsv = () => {
     if (!matchResult || !matchResult.matches.length) return;
@@ -316,9 +406,19 @@ export const RecruiterPortal: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setIsAutoShortlistOpen(true)}
+            disabled={!selectedJobId || evaluating}
+            className="flex items-center justify-center space-x-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all active:scale-[0.98] shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer"
+            title="Auto-shortlist candidates by Top N, Score threshold, or custom criteria"
+          >
+            <Zap className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+            <span>⚡ Auto-Shortlist</span>
+          </button>
+
+          <button
             onClick={handleExportCsv}
             disabled={filteredCandidates.length === 0}
-            className="flex items-center justify-center space-x-2 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all active:scale-[0.98] shrink-0 disabled:opacity-40"
+            className="flex items-center justify-center space-x-2 px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/[0.08] text-xs font-semibold transition-all active:scale-[0.98] shrink-0 disabled:opacity-40"
             title="Download CSV of evaluated candidates"
           >
             <Download className="w-3.5 h-3.5" />
@@ -569,13 +669,56 @@ export const RecruiterPortal: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
-            <span>
-              DISPLAYING <strong className="text-white">{filteredCandidates.length}</strong> EVALUATED CANDIDATE{filteredCandidates.length > 1 ? 'S' : ''}
-            </span>
-            <span className="text-[11px] text-slate-500">
-              CLICK CARD TO INSPECT COMPOSITE DOSSIER
-            </span>
+          {/* Candidate Selection Header Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono text-slate-400 px-1 py-1">
+            <div className="flex items-center space-x-3">
+              {filteredCandidates.filter(c => c.eligible).length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleToggleSelectAll}
+                  className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                    filteredCandidates.filter(c => c.eligible).every(c => selectedCandidateIds.has(c.student_id))
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold shadow-sm'
+                      : 'bg-[#0e111a] text-slate-400 border-white/[0.08] hover:text-white hover:border-white/[0.2]'
+                  }`}
+                  title="Select or deselect all eligible candidates in view"
+                >
+                  <div
+                    className={`w-4 h-4 rounded-md border flex items-center justify-center ${
+                      filteredCandidates.filter(c => c.eligible).every(c => selectedCandidateIds.has(c.student_id))
+                        ? 'bg-emerald-500 border-emerald-400 text-slate-950'
+                        : 'border-slate-500 bg-white/[0.02]'
+                    }`}
+                  >
+                    {filteredCandidates.filter(c => c.eligible).every(c => selectedCandidateIds.has(c.student_id)) && (
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    )}
+                  </div>
+                  <span>Select All ({filteredCandidates.filter(c => c.eligible).length})</span>
+                </button>
+              )}
+
+              <span>
+                DISPLAYING <strong className="text-white">{filteredCandidates.length}</strong> EVALUATED CANDIDATE{filteredCandidates.length > 1 ? 'S' : ''}
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              {shortlistedCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearShortlists}
+                  className="text-xs text-rose-400 hover:text-rose-300 transition-colors flex items-center space-x-1 font-mono cursor-pointer"
+                  title="Wipe shortlists for this job"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear Job Shortlists ({shortlistedCount})</span>
+                </button>
+              )}
+              <span className="text-[11px] text-slate-500">
+                CLICK CARD TO INSPECT DOSSIER
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -586,10 +729,63 @@ export const RecruiterPortal: React.FC = () => {
                 onOpenDetails={setSelectedCandidate}
                 isShortlisted={!!shortlistMap[candidate.student_id]}
                 onToggleShortlist={handleToggleShortlist}
+                showCheckbox={true}
+                isSelected={selectedCandidateIds.has(candidate.student_id)}
+                onToggleSelect={handleToggleSelectCandidate}
               />
             ))}
           </div>
         </div>
+      )}
+
+      {/* Floating Batch Selection Bar */}
+      {selectedCandidateIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0e111a]/95 backdrop-blur-xl border border-emerald-500/40 rounded-2xl px-5 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_20px_rgba(16,185,129,0.2)] flex items-center space-x-4 animate-fadeIn">
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-mono text-xs text-slate-200">
+              Selected: <strong className="text-emerald-300 font-bold">{selectedCandidateIds.size}</strong> candidate{selectedCandidateIds.size > 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div className="h-4 w-px bg-white/[0.1]" />
+
+          <button
+            type="button"
+            onClick={handleBulkShortlistSelected}
+            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-display font-bold text-xs shadow-md flex items-center space-x-1.5 transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <Star className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+            <span>Shortlist Selected ({selectedCandidateIds.size})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedCandidateIds(new Set())}
+            className="text-xs text-slate-400 hover:text-white font-mono transition-colors cursor-pointer"
+          >
+            Deselect All
+          </button>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#121622] border border-emerald-500/40 text-emerald-200 text-xs font-mono px-4 py-3 rounded-2xl shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_15px_rgba(16,185,129,0.2)] flex items-center space-x-2 animate-fadeIn">
+          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Auto-Shortlist Cockpit Modal */}
+      {selectedJob && (
+        <AutoShortlistModal
+          job={selectedJob}
+          isOpen={isAutoShortlistOpen}
+          onClose={() => setIsAutoShortlistOpen(false)}
+          onSuccess={handleAutoShortlistSuccess}
+          institutionId={activeInst}
+        />
       )}
 
       {/* Candidate Modal */}
@@ -600,3 +796,4 @@ export const RecruiterPortal: React.FC = () => {
     </div>
   );
 };
+

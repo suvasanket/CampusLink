@@ -225,3 +225,49 @@ export interface RecruiterDetailResponse {
   jobs: JobRequirements[];
 }
 
+export interface AutoShortlistCriteria {
+  strategy: 'top_n' | 'min_score' | 'category' | 'custom';
+  top_n?: number;
+  min_score?: number;
+  categories?: string[];
+  branches?: string[];
+  min_cgpa?: number;
+  max_backlogs?: number;
+  must_have_all_required_skills?: boolean;
+  institution_id?: string;
+  notes?: string;
+}
+
+export interface AutoShortlistCandidatePreview {
+  student_id: string;
+  student_name: string;
+  branch: string;
+  cgpa: number;
+  rank: number;
+  match_score: number;
+  category: string;
+  already_shortlisted: boolean;
+}
+
+export interface AutoShortlistPreviewResponse {
+  job_id: string;
+  job_title?: string;
+  company?: string;
+  total_evaluated: number;
+  total_qualified: number;
+  already_shortlisted_count: number;
+  newly_shortlisted_count: number;
+  avg_match_score: number;
+  candidates: AutoShortlistCandidatePreview[];
+}
+
+export interface AutoShortlistExecuteResponse {
+  job_id: string;
+  total_shortlisted: number;
+  newly_shortlisted_count: number;
+  already_shortlisted_count: number;
+  message: string;
+  application_ids: number[];
+}
+
+

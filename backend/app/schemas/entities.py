@@ -157,6 +157,58 @@ class ApplicationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+# --- Auto-Shortlisting Schemas ---
+class AutoShortlistCriteria(BaseModel):
+    strategy: str = Field(default="top_n", description="'top_n', 'min_score', 'category', 'custom'")
+    top_n: Optional[int] = Field(default=10, ge=1, le=200)
+    min_score: Optional[float] = Field(default=70.0, ge=0.0, le=100.0)
+    categories: Optional[List[str]] = Field(default_factory=lambda: ["Highly Suitable", "Suitable"])
+    branches: Optional[List[str]] = None
+    min_cgpa: Optional[float] = Field(default=None, ge=0.0, le=10.0)
+    max_backlogs: Optional[int] = Field(default=0, ge=0)
+    must_have_all_required_skills: Optional[bool] = False
+    institution_id: Optional[str] = None
+    notes: Optional[str] = "Auto-shortlisted via rule policy"
+
+class AutoShortlistCandidatePreview(BaseModel):
+    student_id: str
+    student_name: str
+    branch: Optional[str] = ""
+    cgpa: Optional[float] = 0.0
+    rank: int
+    match_score: float
+    category: str
+    already_shortlisted: bool
+
+class AutoShortlistPreviewResponse(BaseModel):
+    job_id: str
+    job_title: Optional[str] = ""
+    company: Optional[str] = ""
+    total_evaluated: int
+    total_qualified: int
+    already_shortlisted_count: int
+    newly_shortlisted_count: int
+    avg_match_score: float
+    candidates: List[AutoShortlistCandidatePreview]
+
+class AutoShortlistExecuteResponse(BaseModel):
+    job_id: str
+    total_shortlisted: int
+    newly_shortlisted_count: int
+    already_shortlisted_count: int
+    message: str
+    application_ids: List[int]
+
+class BulkShortlistRequest(BaseModel):
+    job_id: str
+    student_ids: List[str]
+    notes: Optional[str] = "Bulk shortlisted"
+
+class BulkClearShortlistRequest(BaseModel):
+    job_id: str
+    student_ids: Optional[List[str]] = None
+
+
 # --- Institution Schemas ---
 class InstitutionCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=150)

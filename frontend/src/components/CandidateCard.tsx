@@ -1,20 +1,27 @@
 import React from 'react';
 import { CandidateMatchItem } from '../types';
-import { AlertTriangle, CheckCircle2, ChevronRight, Ban, Star, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronRight, Ban, Star, ShieldCheck, Sparkles, Check } from 'lucide-react';
 
 interface CandidateCardProps {
   candidate: CandidateMatchItem;
   onOpenDetails: (candidate: CandidateMatchItem) => void;
   isShortlisted?: boolean;
   onToggleShortlist?: (candidate: CandidateMatchItem) => void;
+  isSelected?: boolean;
+  onToggleSelect?: (candidate: CandidateMatchItem) => void;
+  showCheckbox?: boolean;
 }
 
 export const CandidateCard: React.FC<CandidateCardProps> = ({
   candidate,
   onOpenDetails,
   isShortlisted = false,
-  onToggleShortlist
+  onToggleShortlist,
+  isSelected = false,
+  onToggleSelect,
+  showCheckbox = false
 }) => {
+
   const isTopRank = candidate.rank <= 3 && candidate.eligible;
 
   const categoryBadge = () => {
@@ -62,7 +69,9 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
     <div
       onClick={() => onOpenDetails(candidate)}
       className={`group relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between ${
-        !candidate.eligible
+        isSelected
+          ? 'ring-2 ring-emerald-500/60 border-emerald-500/50 bg-[#111724]'
+          : !candidate.eligible
           ? 'bg-[#0e111a]/50 border-white/[0.05] hover:border-white/[0.12] opacity-75'
           : isTopRank
           ? 'bg-gradient-to-b from-[#131726]/90 to-[#0e111a]/95 border-emerald-500/30 hover:border-emerald-500/60 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-[0_20px_45px_-12px_rgba(0,0,0,0.85),0_0_25px_-5px_rgba(16,185,129,0.15)] hover:-translate-y-0.5'
@@ -80,6 +89,25 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
           
           {/* Identity & Rank */}
           <div className="flex items-start space-x-3 min-w-0">
+            {/* Multi-select checkbox */}
+            {showCheckbox && candidate.eligible && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSelect && onToggleSelect(candidate);
+                }}
+                className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all duration-150 shrink-0 mt-2 cursor-pointer ${
+                  isSelected
+                    ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+                    : 'bg-white/[0.04] border-white/[0.15] hover:border-white/[0.3] hover:bg-white/[0.08] text-transparent'
+                }`}
+                title={isSelected ? 'Deselect candidate' : 'Select candidate'}
+              >
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+              </button>
+            )}
+
             {/* Rank Badge */}
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-xs shrink-0 border transition-transform duration-200 group-hover:scale-105 ${
@@ -128,18 +156,20 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     onToggleShortlist(candidate);
                   }}
-                  className={`p-1.5 rounded-lg border transition-all duration-200 ${
+                  className={`p-1.5 rounded-lg border transition-all duration-200 cursor-pointer ${
                     isShortlisted
                       ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)] scale-105'
                       : 'bg-white/[0.02] text-slate-400 border-white/[0.08] hover:text-white hover:border-white/[0.2] hover:bg-white/[0.05]'
                   }`}
-                  title={isShortlisted ? 'Remove from Shortlist' : 'Shortlist Candidate'}
+                  title={isShortlisted ? 'Click to remove from Shortlist' : 'Click to Shortlist Candidate'}
                 >
                   <Star className={`w-3.5 h-3.5 ${isShortlisted ? 'fill-amber-400 text-amber-400' : ''}`} />
                 </button>
               )}
+
 
               {/* Match Score Percentage */}
               <div className="flex items-baseline space-x-0.5">

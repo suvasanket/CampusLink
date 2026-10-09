@@ -13,7 +13,10 @@ import {
   StudentLoginResponse,
   Recruiter,
   RecruiterCreateData,
-  RecruiterDetailResponse
+  RecruiterDetailResponse,
+  AutoShortlistCriteria,
+  AutoShortlistPreviewResponse,
+  AutoShortlistExecuteResponse
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -32,8 +35,17 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
     throw new Error(errorData.detail || `Request failed with status ${res.status}`);
   }
 
-  return res.json();
+  if (res.status === 204) {
+    return {} as T;
+  }
+
+  const text = await res.text();
+  if (!text) {
+    return {} as T;
+  }
+  return JSON.parse(text);
 }
+
 
 export const api = {
   // System Health
@@ -139,6 +151,32 @@ export const api = {
   deleteApplication: (id: number) =>
     fetchJson<void>(`/applications/${id}`, {
       method: 'DELETE'
+    }),
+
+  // Auto-Shortlist & Bulk Recruitment Engine
+  previewAutoShortlist: (jobId: string, criteria: AutoShortlistCriteria) =>
+    fetchJson<AutoShortlistPreviewResponse>(`/jobs/${encodeURIComponent(jobId)}/auto-shortlist/preview`, {
+      method: 'POST',
+      body: JSON.stringify(criteria)
+    }),
+
+  executeAutoShortlist: (jobId: string, criteria: AutoShortlistCriteria) =>
+    fetchJson<AutoShortlistExecuteResponse>(`/jobs/${encodeURIComponent(jobId)}/auto-shortlist`, {
+      method: 'POST',
+      body: JSON.stringify(criteria)
+    }),
+
+  bulkShortlist: (jobId: string, studentIds: string[], notes = 'Bulk shortlisted') =>
+    fetchJson<AutoShortlistExecuteResponse>(`/jobs/${encodeURIComponent(jobId)}/bulk-shortlist`, {
+      method: 'POST',
+      body: JSON.stringify({ job_id: jobId, student_ids: studentIds, notes })
+    }),
+
+  clearJobShortlists: (jobId: string, studentIds?: string[]) =>
+    fetchJson<{ job_id: string; deleted_count: number; message: string }>(`/jobs/${encodeURIComponent(jobId)}/clear-shortlist`, {
+      method: 'POST',
+      body: JSON.stringify({ job_id: jobId, student_ids: studentIds })
     })
 };
+
 
