@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Building2, GraduationCap, LogOut, ShieldCheck, User, LogIn } from 'lucide-react';
+import { Building2, GraduationCap, LogOut, ShieldCheck, User, LogIn } from 'lucide-react';
 import { authService } from '../services/auth';
 import { Institution, LoggedInStudent } from '../types';
+import logoImg from '../assets/logo.png';
 
 interface NavbarProps {
   dbType?: string;
@@ -63,19 +64,19 @@ export const Navbar: React.FC<NavbarProps> = () => {
             className="flex items-center space-x-3 cursor-pointer group"
             onClick={handleLogoClick}
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-transform duration-300 group-hover:scale-105">
-              <Sparkles className="w-4 h-4 text-slate-950 font-bold" />
+            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(245,158,11,0.25)] border-2 border-amber-400/40 transition-transform duration-300 group-hover:scale-105 shrink-0 bg-[#f9ba32]/10 flex items-center justify-center p-0.5">
+              <img src={logoImg} alt="CampusLink Logo" className="w-full h-full object-cover rounded-[14px]" />
             </div>
             <div>
               <div className="text-lg font-display font-bold text-white tracking-tight group-hover:text-emerald-300 transition-colors">
                 CampusLink
               </div>
-              <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-slate-400 font-medium">
+              <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-slate-400 font-medium">
                 {loggedInInstitution
                   ? loggedInInstitution.name
                   : loggedInStudent
                   ? `Candidate: ${loggedInStudent.name}`
-                  : 'Placement Intelligence Monolith'}
+                  : 'Smart Campus Placement Platform'}
               </div>
             </div>
           </div>
@@ -153,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                   className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-mono text-emerald-300 border border-emerald-500/30 transition-colors flex items-center space-x-1.5"
                 >
                   <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Admin Gateway</span>
+                  <span>College Admin Portal</span>
                 </button>
               </div>
             )}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { InstitutionStats, StudentProfile, JobRequirements, ApplicationRecord, Institution, Recruiter } from '../types';
 import { authService } from '../services/auth';
+import logoImg from '../assets/logo.png';
 import {
   Building2,
   Users,
@@ -188,9 +189,14 @@ export const InstitutionPortal: React.FC = () => {
           
           {/* Header */}
           <div className="space-y-3">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/25 text-xs font-mono uppercase tracking-wider">
-              <Lock className="w-3.5 h-3.5 text-rose-400" />
-              <span>Restricted • Institution Admin Privileges Only</span>
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/25 text-xs font-mono uppercase tracking-wider">
+                <Lock className="w-3.5 h-3.5 text-rose-400" />
+                <span>Restricted • Institution Admin Privileges Only</span>
+              </div>
+              <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-[0_0_15px_rgba(245,158,11,0.25)] border-2 border-amber-400/40 shrink-0 bg-[#F59E0B]/10 flex items-center justify-center p-0.5">
+                <img src={logoImg} alt="CampusLink Logo" className="w-full h-full object-cover rounded-[12px]" />
+              </div>
             </div>
 
             <div className="flex items-center space-x-3 pt-1">

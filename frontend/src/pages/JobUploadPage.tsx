@@ -252,13 +252,13 @@ export const JobUploadPage: React.FC<JobUploadPageProps> = ({ onJobCreated }) =>
           </button>
           <div className="flex items-center space-x-2 text-emerald-400 text-xs font-mono uppercase tracking-widest mb-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-            <span>Campus Placement Requisition Engine</span>
+            <span>Campus Recruitment Requisition</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
-            Create & Ingest Job Specification
+            Create New Job Requisition
           </h1>
           <p className="text-slate-400 text-sm mt-1 max-w-2xl leading-relaxed">
-            Define role cutoffs, degree disciplines, and skill taxonomy. Candidates will be ranked instantaneously with zero token consumption.
+            Define role cutoffs, degree branches, and core skill requirements. Eligible student candidates will be matched and ranked automatically.
           </p>
         </div>
 
@@ -327,7 +327,7 @@ export const JobUploadPage: React.FC<JobUploadPageProps> = ({ onJobCreated }) =>
             {/* Hard Cutoffs Summary */}
             <div className="p-4 rounded-2xl bg-[#090A0F] border border-white/[0.06] space-y-2">
               <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                Deterministic Cutoffs
+                Eligibility Cutoffs
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04]">
@@ -425,24 +425,24 @@ export const JobUploadPage: React.FC<JobUploadPageProps> = ({ onJobCreated }) =>
             </div>
           </div>
 
-          {/* Zero-Token Local Intelligence Telemetry */}
+          {/* Candidate Evaluation Standards */}
           <div className="p-5 rounded-3xl bg-[#0E111A] border border-white/[0.08] space-y-3">
             <div className="flex items-center space-x-2 text-xs font-mono uppercase tracking-wider text-slate-400">
               <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Matching Engine Specifications</span>
+              <span>Candidate Evaluation Standards</span>
             </div>
             <ul className="space-y-2 text-xs text-slate-400 leading-relaxed font-mono">
               <li className="flex items-start space-x-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
-                <span>6-Factor Multi-Dimensional Dot Product</span>
+                <span>Comprehensive 6-Factor Profile Scoring</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
-                <span>Deterministic CGPA & Branch Hard Gate</span>
+                <span>Objective CGPA & Degree Branch Cutoffs</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
-                <span>Local MiniLM Vector Semantics (0 API Tokens)</span>
+                <span>Semantic Skill & Project Alignment</span>
               </li>
             </ul>
           </div>
@@ -508,15 +508,15 @@ export const JobUploadPage: React.FC<JobUploadPageProps> = ({ onJobCreated }) =>
               </div>
             </div>
 
-            {/* Section 02: Deterministic Cutoffs */}
+            {/* Section 02: Mandatory Eligibility Criteria */}
             <div className="p-6 sm:p-8 rounded-3xl bg-[#0E111A] border border-white/[0.08] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.06)] space-y-6">
               <div className="flex items-center space-x-3 pb-4 border-b border-white/[0.06]">
                 <span className="w-7 h-7 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center justify-center font-bold">
                   02
                 </span>
                 <div>
-                  <h2 className="text-base font-display font-bold text-white">Deterministic Hard Eligibility Rules</h2>
-                  <p className="text-xs text-slate-400">Strict gatekeeper filters evaluated before candidate ranking.</p>
+                  <h2 className="text-base font-display font-bold text-white">Mandatory Eligibility Criteria</h2>
+                  <p className="text-xs text-slate-400">Essential academic and backlog filters applied before candidate matching.</p>
                 </div>
               </div>
 
@@ -601,7 +601,7 @@ export const JobUploadPage: React.FC<JobUploadPageProps> = ({ onJobCreated }) =>
                     className="w-full bg-[#090A0F] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40 transition-colors"
                   />
                   <div className="text-[11px] font-mono text-slate-500 mt-1.5">
-                    Required skills are weighted directly in the 6-factor deterministic scoring engine.
+                    Mandatory skills are weighted directly in the candidate matching score.
                   </div>
                 </div>
 

@@ -409,7 +409,7 @@ export const StudentRegistrationPage: React.FC = () => {
                 Student Candidate Dossier Enrolment
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Ingest your academic record, engineering projects, and competencies into the campus deterministic placement matching engine.
+                Build your verified candidate profile to discover career matches, track eligibility, and connect with visiting recruiters.
               </p>
             </div>
 

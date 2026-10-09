@@ -186,7 +186,7 @@ export const RecruiterRegistrationPage: React.FC = () => {
             </div>
 
             <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.06] text-[11px] font-mono text-slate-400 leading-relaxed">
-              <span className="text-emerald-400 font-semibold">Deterministic Matching:</span> Candidate ranking uses exact arithmetic formula dot-products.
+              <span className="text-emerald-400 font-semibold">Objective Candidate Evaluation:</span> Candidates are scored transparently across skills, projects, and academic cutoffs.
             </div>
           </div>
 
@@ -257,7 +257,7 @@ export const RecruiterRegistrationPage: React.FC = () => {
                 Corporate Recruiter Onboarding & Requisition Setup
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Connect your talent pipeline with pre-screened student cohorts using deterministic hard eligibility and 6-factor multi-dimensional ranking.
+                Connect directly with pre-screened campus cohorts matching your exact academic cutoffs and technical skill requirements.
               </p>
             </div>
 

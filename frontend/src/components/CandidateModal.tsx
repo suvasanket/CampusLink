@@ -52,7 +52,7 @@ export const CandidateModal: React.FC<CandidateModalProps> = ({ candidate, onClo
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
             <span>Candidate Intelligence Dossier</span>
             <span className="text-slate-600">//</span>
-            <span className="text-slate-400">Deterministic Audit Record</span>
+            <span className="text-slate-400">Verified Candidate Dossier</span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -113,10 +113,10 @@ export const CandidateModal: React.FC<CandidateModalProps> = ({ candidate, onClo
           <div className="flex items-center justify-between">
             <h3 className="font-mono text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-2">
               <Layers className="w-4 h-4 text-emerald-400" />
-              <span>6-Factor Weighted Scoring Telemetry</span>
+              <span>6-Factor Evaluation Breakdown</span>
             </h3>
             <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider">
-              Deterministic Weights
+              Scoring Weights
             </span>
           </div>
 

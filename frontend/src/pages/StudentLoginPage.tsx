@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { authService } from '../services/auth';
 import { Institution } from '../types';
-import { GraduationCap, Lock, Mail, User, ArrowRight, AlertCircle, Building2, LogIn, Sparkles } from 'lucide-react';
+import { GraduationCap, Lock, Mail, User, ArrowRight, AlertCircle, Building2, LogIn } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 export const StudentLoginPage: React.FC = () => {
   const { institutionId } = useParams<{ institutionId?: string }>();
@@ -84,9 +85,14 @@ export const StudentLoginPage: React.FC = () => {
         
         {/* Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-xs font-mono uppercase tracking-wider">
-            <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Candidate Dossier Gateway</span>
+          <div className="flex items-center justify-between">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-xs font-mono uppercase tracking-wider">
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Candidate Dossier Gateway</span>
+            </div>
+            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-[0_0_15px_rgba(245,158,11,0.25)] border-2 border-amber-400/40 shrink-0 bg-[#F59E0B]/10 flex items-center justify-center p-0.5">
+              <img src={logoImg} alt="CampusLink Logo" className="w-full h-full object-cover rounded-[12px]" />
+            </div>
           </div>
 
           <div className="flex items-center space-x-3 pt-1">

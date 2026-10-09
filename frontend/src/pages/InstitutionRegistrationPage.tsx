@@ -137,13 +137,13 @@ export const InstitutionRegistrationPage: React.FC = () => {
           </button>
           <div className="flex items-center space-x-2 text-emerald-400 text-xs font-mono uppercase tracking-widest mb-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-            <span>Multi-Tenant Node Provisioning</span>
+            <span>Institution Workspace Setup</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
             Register Institution Campus
           </h1>
           <p className="text-slate-400 text-sm mt-1 max-w-2xl leading-relaxed">
-            Provision a sovereign placement workspace with isolated student rosters, custom recruiter intake links, and deterministic ranking engines.
+            Create your dedicated placement cell workspace to manage student cohorts, publish job opportunities, and connect with visiting recruiters.
           </p>
         </div>
 
@@ -212,10 +212,10 @@ export const InstitutionRegistrationPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Permanent Vanity Subpath Generator */}
+            {/* Campus Access URL */}
             <div className="p-4 rounded-2xl bg-[#090A0F] border border-white/[0.06] space-y-2">
               <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-                <span>VANITY TENANT PATH</span>
+                <span>CAMPUS ACCESS URL</span>
                 <span className="text-emerald-400 font-semibold">Active Slug</span>
               </div>
               <div className="font-mono text-xs text-emerald-300 break-all select-all flex items-center space-x-1.5">
@@ -225,11 +225,11 @@ export const InstitutionRegistrationPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
-                This vanity URL will anchor your primary placement dashboard and all child intake gateways.
+                This custom address anchors your primary placement dashboard and all candidate registration gateways.
               </p>
             </div>
 
-            {/* Auto-Generated Child Gateways */}
+            {/* Auto-Generated Gateways */}
             <div className="space-y-2 text-xs font-mono">
               <div className="text-[11px] text-slate-400 uppercase tracking-wider">Generated Intake Gateways</div>
               <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[11px] text-slate-400 flex items-center justify-between">
@@ -251,24 +251,24 @@ export const InstitutionRegistrationPage: React.FC = () => {
             )}
           </div>
 
-          {/* Architecture Isolation Telemetry */}
+          {/* Privacy & Performance Guarantees */}
           <div className="p-5 rounded-3xl bg-[#0E111A] border border-white/[0.08] space-y-3">
             <div className="flex items-center space-x-2 text-xs font-mono uppercase tracking-wider text-slate-400">
               <Server className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Multi-Tenant Architecture Guarantee</span>
+              <span>Campus Privacy & Security Guarantees</span>
             </div>
             <ul className="space-y-2 text-xs text-slate-400 leading-relaxed">
               <li className="flex items-start space-x-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong className="text-slate-200">Strict Data Boundary:</strong> Student records and recruitment cutoffs are partitioned by unique tenant ID.</span>
+                <span><strong className="text-slate-200">Confidential Student Data:</strong> Student profiles, CGPA records, and placement cutoffs remain completely private to your college.</span>
               </li>
               <li className="flex items-start space-x-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong className="text-slate-200">Zero Token Intelligence:</strong> All candidate scoring and 6-factor evaluations run locally with zero API billing.</span>
+                <span><strong className="text-slate-200">Transparent & Fair Matching:</strong> Comprehensive multi-factor candidate scoring across technical skills, projects, academics, and assessments.</span>
               </li>
               <li className="flex items-start space-x-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong className="text-slate-200">Resilient Persistence:</strong> Automatic failover between PostgreSQL primary and embedded SQLite.</span>
+                <span><strong className="text-slate-200">Reliable Cloud Architecture:</strong> High-availability secure storage ensuring placement records and drives are always accessible.</span>
               </li>
             </ul>
           </div>

@@ -33,6 +33,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { authService } from '../services/auth';
+import logoImg from '../assets/logo.png';
 
 const SAMPLE_RESUMES = {
   backend: `RAHUL SHARMA
@@ -331,9 +332,14 @@ export const StudentPortal: React.FC = () => {
         <div className="rounded-3xl bg-[#0E111A] border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.06)] p-6 sm:p-8 space-y-6">
           
           <div className="space-y-3">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/25 text-xs font-mono uppercase tracking-wider">
-              <Lock className="w-3.5 h-3.5 text-rose-400" />
-              <span>Restricted • Candidate Credentials Required</span>
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/25 text-xs font-mono uppercase tracking-wider">
+                <Lock className="w-3.5 h-3.5 text-rose-400" />
+                <span>Restricted • Candidate Credentials Required</span>
+              </div>
+              <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-[0_0_15px_rgba(245,158,11,0.25)] border-2 border-amber-400/40 shrink-0 bg-[#F59E0B]/10 flex items-center justify-center p-0.5">
+                <img src={logoImg} alt="CampusLink Logo" className="w-full h-full object-cover rounded-[12px]" />
+              </div>
             </div>
 
             <div className="flex items-center space-x-3 pt-1">

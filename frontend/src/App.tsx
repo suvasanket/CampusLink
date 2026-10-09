@@ -29,7 +29,7 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <div className="min-h-screen flex flex-col bg-[#090A0F] text-slate-100 selection:bg-emerald-500 selection:text-black">
-        {/* Universal Top Header with Multi-Tenant Navigation */}
+        {/* Universal Top Header Navigation */}
         <Navbar dbType={dbType} />
 
         {/* Dynamic Route Viewport */}
@@ -72,27 +72,6 @@ export const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
-
-        {/* Global Minimal Studio Footer */}
-        <footer className="border-t border-white/[0.06] bg-[#090a0f] py-6 text-xs text-slate-400 font-mono">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center space-x-2">
-              <span className="font-display font-semibold text-white">CampusLink</span>
-              <span className="text-slate-600">//</span>
-              <span className="text-slate-400">Deterministic University Placement Intelligence Monolith</span>
-            </div>
-            <div className="flex items-center space-x-3 text-[11px] text-slate-400">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
-                <span className="capitalize">{dbType} Storage Engine</span>
-              </span>
-              <span className="text-slate-600">•</span>
-              <span>FastAPI Monolith</span>
-              <span className="text-slate-600">•</span>
-              <span>Multi-Tenant Architecture</span>
-            </div>
-          </div>
-        </footer>
       </div>
     </BrowserRouter>
   );
