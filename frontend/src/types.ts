@@ -24,6 +24,7 @@ export interface AssessmentData {
 export interface StudentProfile {
   id: string;
   name: string;
+  email?: string;
   branch: string;
   graduation_year?: number;
   cgpa: number;
@@ -166,11 +167,35 @@ export interface Institution {
 export interface InstitutionCreateData {
   name: string;
   username: string;
+  password?: string;
   code?: string;
   location?: string;
   contact_email?: string;
   admin_name?: string;
   website?: string;
+}
+
+export interface InstitutionLoginResponse {
+  institution: Institution;
+  token: string;
+  message: string;
+}
+
+export interface StudentRegisterData extends StudentProfile {
+  password: string;
+}
+
+export interface StudentLoginResponse {
+  student: StudentProfile;
+  token: string;
+  message: string;
+}
+
+export interface LoggedInStudent {
+  id: string;
+  name: string;
+  email?: string;
+  institution_id?: string;
 }
 
 export interface Recruiter {

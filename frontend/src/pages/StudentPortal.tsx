@@ -23,8 +23,16 @@ import {
   Upload,
   X,
   Star,
-  Check
+  Check,
+  Lock,
+  LogOut,
+  User,
+  AlertCircle,
+  Building2,
+  LogIn,
+  ShieldCheck
 } from 'lucide-react';
+import { authService } from '../services/auth';
 
 const SAMPLE_RESUMES = {
   backend: `RAHUL SHARMA
@@ -104,10 +112,23 @@ export const StudentPortal: React.FC = () => {
   const { institutionId, studentId } = useParams<{ institutionId?: string; studentId?: string }>();
   const navigate = useNavigate();
 
+  const activeInst = institutionId || 'apex-inst';
+
+  // Role Authentication Context
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => authService.isInstitutionAdmin(activeInst));
+  const [loggedInStudent, setLoggedInStudent] = useState(() => authService.getLoggedInStudent());
+
+  // Inline Student Auth Gate State
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authenticating, setAuthenticating] = useState(false);
+
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [jobs, setJobs] = useState<JobRequirements[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || 'STU001');
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || '');
   const [selectedJobId, setSelectedJobId] = useState<string>('JOB001');
   
   const [readiness, setReadiness] = useState<StudentReadinessResponse | null>(null);
@@ -121,6 +142,17 @@ export const StudentPortal: React.FC = () => {
   const [parsingResume, setParsingResume] = useState<boolean>(false);
   const [parsedProfile, setParsedProfile] = useState<StudentProfile | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setIsAdmin(authService.isInstitutionAdmin(activeInst));
+      setLoggedInStudent(authService.getLoggedInStudent());
+    };
+    window.addEventListener('campuslink-auth-change', handleAuthChange);
+    return () => {
+      window.removeEventListener('campuslink-auth-change', handleAuthChange);
+    };
+  }, [activeInst]);
 
   useEffect(() => {
     loadInitialData();
@@ -145,7 +177,6 @@ export const StudentPortal: React.FC = () => {
   const loadInitialData = async () => {
     try {
       setLoading(true);
-      const activeInst = institutionId || 'apex-inst';
       const [instData, studentsList, jobsList] = await Promise.all([
         api.getInstitution(activeInst).catch(() => null),
         api.getInstitutionStudents(activeInst).catch(() => api.getStudents()),
@@ -156,9 +187,16 @@ export const StudentPortal: React.FC = () => {
       setStudents(studentsList);
       setJobs(jobsList);
 
-      // Prioritize studentId from route param, else first available
+      const currentStu = authService.getLoggedInStudent();
+      const adminActive = authService.isInstitutionAdmin(activeInst);
+
+      // Prioritize studentId from route param, else logged in student, else fallback if admin
       if (studentId) {
         setSelectedStudentId(studentId);
+      } else if (currentStu && currentStu.id) {
+        setSelectedStudentId(currentStu.id);
+      } else if (adminActive && studentsList.length > 0) {
+        setSelectedStudentId(studentsList[0].id);
       } else if (studentsList.length > 0) {
         setSelectedStudentId(studentsList[0].id);
       }
@@ -175,6 +213,46 @@ export const StudentPortal: React.FC = () => {
     setSelectedStudentId(newStuId);
     const activeInstSlug = institution?.username || institutionId || 'apex-inst';
     navigate(`/${activeInstSlug}/student/${newStuId}`);
+  };
+
+  const handleStudentLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginIdentifier.trim() || !loginPassword) {
+      setAuthError('Please enter your Student ID or Email and password.');
+      return;
+    }
+    try {
+      setAuthenticating(true);
+      setAuthError(null);
+      const res = await api.loginStudent(activeInst, loginIdentifier.trim(), loginPassword);
+      if (res && res.student) {
+        const targetSlug = institution?.username || activeInst;
+        authService.setLoggedInStudent({
+          id: res.student.id,
+          name: res.student.name,
+          email: res.student.email,
+          institution_id: targetSlug
+        }, res.token);
+        setLoggedInStudent({
+          id: res.student.id,
+          name: res.student.name,
+          email: res.student.email,
+          institution_id: targetSlug
+        });
+        setSelectedStudentId(res.student.id);
+        navigate(`/${targetSlug}/student/${res.student.id}`);
+      }
+    } catch (err: any) {
+      setAuthError(err.message || 'Invalid Student ID or password.');
+    } finally {
+      setAuthenticating(false);
+    }
+  };
+
+  const handleStudentLogout = () => {
+    authService.logoutStudent();
+    setLoggedInStudent(null);
+    navigate(`/${institution?.username || activeInst}/student-login`);
   };
 
   const loadStudentReadiness = async (stuId: string) => {
@@ -234,13 +312,171 @@ export const StudentPortal: React.FC = () => {
       case 'Highly Employable':
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
       case 'Ready':
-        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
+        return 'bg-sky-500/10 text-sky-400 border-sky-500/30';
       case 'Developing':
         return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
       default:
         return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
     }
   };
+
+  const isAuthorized = isAdmin || (
+    loggedInStudent !== null &&
+    (loggedInStudent.id || '').toLowerCase() === (selectedStudentId || '').toLowerCase()
+  );
+
+  if (!isAuthorized) {
+    return (
+      <div className="max-w-xl mx-auto py-8 sm:py-16 px-4 animate-fadeIn">
+        <div className="rounded-3xl bg-[#0E111A] border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.06)] p-6 sm:p-8 space-y-6">
+          
+          <div className="space-y-3">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/25 text-xs font-mono uppercase tracking-wider">
+              <Lock className="w-3.5 h-3.5 text-rose-400" />
+              <span>Restricted • Candidate Credentials Required</span>
+            </div>
+
+            <div className="flex items-center space-x-3 pt-1">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <GraduationCap className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h1 className="text-xl font-display font-extrabold text-white">
+                  Student Candidate Dossier
+                </h1>
+                <p className="text-xs text-slate-400 font-mono">
+                  Target Profile: {selectedStudentId || 'Candidate Authentication'} • {institution?.name || activeInst}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
+              This candidate dossier contains private readiness metrics, CGPA assessments, and company application records. Please authenticate with your student credentials to proceed.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center space-x-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{authError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleStudentLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider">
+                Student ID or Registered Email *
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. STU001 or rahul.sharma@apex.edu"
+                  value={loginIdentifier}
+                  onChange={e => setLoginIdentifier(e.target.value)}
+                  className="w-full bg-[#121622] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white font-mono placeholder-slate-500 focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider">
+                  Candidate Password *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300"
+                >
+                  {showLoginPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type={showLoginPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Enter student password (demo: student123)"
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  className="w-full bg-[#121622] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white font-mono placeholder-slate-500 focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-0.5">
+                <span>Default seeded test password:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginIdentifier('STU001');
+                    setLoginPassword('student123');
+                  }}
+                  className="text-emerald-400 hover:underline"
+                >
+                  Quick Fill (STU001 / student123)
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={authenticating}
+              className="w-full py-3.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 font-display font-semibold text-sm shadow-[0_0_20px_rgba(16,185,129,0.15)] flex items-center justify-center space-x-2 transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              {authenticating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-emerald-300/30 border-t-emerald-300 rounded-full animate-spin" />
+                  <span>Verifying Credentials...</span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4 text-emerald-400" />
+                  <span>Unlock Candidate Dossier</span>
+                  <ArrowRight className="w-4 h-4 text-emerald-400" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-white/[0.06] space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Not enrolled yet?</span>
+              <button
+                type="button"
+                onClick={() => navigate(`/${institution?.username || activeInst}/student-registration`)}
+                className="font-mono text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                Register Candidate Profile →
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Institution Administrator?</span>
+              <button
+                type="button"
+                onClick={() => navigate(`/${institution?.username || activeInst}`)}
+                className="font-mono text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+              >
+                Admin Control Console →
+              </button>
+            </div>
+
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="font-mono text-xs text-slate-400 hover:text-white transition-colors"
+              >
+                ← Return to Global Platform
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -251,53 +487,80 @@ export const StudentPortal: React.FC = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-2xl space-y-3">
-            <div className="flex items-center space-x-2 text-xs mb-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs mb-3">
               <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono text-[11px] uppercase tracking-wider">
                 <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Student Career Readiness Diagnostic</span>
               </span>
-              <button
-                onClick={() => navigate(`/${institution?.username || institutionId || 'apex-inst'}`)}
-                className="font-mono text-xs text-slate-400 hover:text-emerald-300 transition-colors"
-              >
-                ← {institution?.name || 'Campus Control Desk'}
-              </button>
+
+              {isAdmin ? (
+                <button
+                  onClick={() => navigate(`/${institution?.username || activeInst}`)}
+                  className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30 font-mono text-[11px] hover:bg-sky-500/20 transition-colors"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
+                  <span>← Return to Admin Console</span>
+                </button>
+              ) : (
+                <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono text-[11px]">
+                  <Check className="w-3 h-3 text-emerald-400" />
+                  <span>Candidate Session Verified</span>
+                </span>
+              )}
             </div>
+
             <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight leading-tight">
               Candidate Diagnostic & Skill Roadmap
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               Enrolled under <strong className="text-emerald-300">{institution?.name || 'Institution Campus'}</strong>.
-              Console URL: <span className="font-mono text-emerald-400 text-xs">/{institution?.username || institutionId || 'apex-inst'}/student/{selectedStudentId}</span>
+              Profile: <span className="font-mono text-emerald-400 text-xs">/{institution?.username || activeInst}/student/{selectedStudentId}</span>
             </p>
           </div>
 
-          {/* Action & Student Selector */}
+          {/* Action & Student Identity / Selector */}
           <div className="bg-[#121622] p-4 rounded-2xl border border-white/[0.06] shrink-0 space-y-3">
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Active Profile:
-                </label>
-                <button
-                  onClick={() => navigate(`/${institution?.username || institutionId || 'apex-inst'}/student-registration`)}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300"
+            {isAdmin ? (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Admin Inspector:
+                  </label>
+                  <span className="text-[10px] font-mono text-sky-400">Officer View</span>
+                </div>
+                <select
+                  value={selectedStudentId}
+                  onChange={e => handleStudentChange(e.target.value)}
+                  className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 w-full"
                 >
-                  + New Student
-                </button>
+                  {students.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.branch} • CGPA {s.cgpa})
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                value={selectedStudentId}
-                onChange={e => handleStudentChange(e.target.value)}
-                className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 w-full"
-              >
-                {students.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.branch} • CGPA {s.cgpa})
-                  </option>
-                ))}
-              </select>
-            </div>
+            ) : (
+              <div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  Enrolled Candidate:
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#090a0f] border border-white/[0.06] flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-display font-bold text-white text-xs">{currentStudent?.name || loggedInStudent?.name}</div>
+                    <div className="font-mono text-[10.5px] text-emerald-400">ID: {currentStudent?.id || loggedInStudent?.id}</div>
+                  </div>
+                  <button
+                    onClick={handleStudentLogout}
+                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-[11px] font-mono flex items-center space-x-1 transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-3 h-3 text-rose-400" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             <button
               onClick={() => {
@@ -337,7 +600,7 @@ export const StudentPortal: React.FC = () => {
                   <div className="font-bold text-white text-xs">{app.job_title}</div>
                   <div className="text-[11px] text-slate-400">{app.company}</div>
                   {app.match_score && (
-                    <div className="text-[10px] text-indigo-400 mt-0.5">Match Score: {app.match_score}%</div>
+                    <div className="text-[10px] text-emerald-400 font-mono mt-0.5">Match Score: {app.match_score}%</div>
                   )}
                 </div>
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -369,7 +632,7 @@ export const StudentPortal: React.FC = () => {
 
               {/* Big Score Radial / Text */}
               <div className="my-6 text-center">
-                <div className="text-5xl font-black bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent font-mono">
+                <div className="text-5xl font-black bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent font-mono">
                   {readiness.readiness_score}
                 </div>
                 <div className="text-xs text-slate-400 mt-1 uppercase font-semibold tracking-wider">
@@ -380,9 +643,9 @@ export const StudentPortal: React.FC = () => {
               {/* Factor Breakdown */}
               <div className="space-y-3 pt-2">
                 {[
-                  { label: 'Technical Depth', val: readiness.factor_scores.technical_skills, color: 'bg-indigo-500' },
-                  { label: 'Project Portfolio', val: readiness.factor_scores.project_depth, color: 'bg-violet-500' },
-                  { label: 'Academic Standing', val: readiness.factor_scores.academics, color: 'bg-emerald-500' },
+                  { label: 'Technical Depth', val: readiness.factor_scores.technical_skills, color: 'bg-emerald-500' },
+                  { label: 'Project Portfolio', val: readiness.factor_scores.project_depth, color: 'bg-teal-500' },
+                  { label: 'Academic Standing', val: readiness.factor_scores.academics, color: 'bg-emerald-400' },
                   { label: 'Test Assessments', val: readiness.factor_scores.assessments, color: 'bg-sky-500' },
                   { label: 'Communication', val: readiness.factor_scores.communication, color: 'bg-pink-500' },
                 ].map((f, i) => (
@@ -408,7 +671,7 @@ export const StudentPortal: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             <div className="p-6 rounded-3xl bg-slate-800/40 border border-slate-700/80">
               <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-                <Layers className="w-5 h-5 text-indigo-400" />
+                <Layers className="w-5 h-5 text-emerald-400" />
                 <span>Demonstrated Skills & Projects</span>
               </h2>
 
@@ -424,7 +687,7 @@ export const StudentPortal: React.FC = () => {
                       className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 flex items-center space-x-2 text-xs"
                     >
                       <span className="font-semibold text-slate-200">{sk.name}</span>
-                      <span className="text-[10px] text-indigo-400 font-mono">{(sk.level * 100).toFixed(0)}%</span>
+                      <span className="text-[10px] text-emerald-400 font-mono">{(sk.level * 100).toFixed(0)}%</span>
                     </div>
                   ))}
                 </div>
@@ -478,7 +741,7 @@ export const StudentPortal: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-white flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-indigo-400" />
+              <TrendingUp className="w-5 h-5 text-emerald-400" />
               <span>Target Role Skill-Gap Diagnostic</span>
             </h2>
             <p className="text-xs text-slate-400 mt-1">
@@ -491,7 +754,7 @@ export const StudentPortal: React.FC = () => {
             <select
               value={selectedJobId}
               onChange={e => setSelectedJobId(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+              className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
             >
               {jobs.map(j => (
                 <option key={j.id} value={j.id}>
@@ -510,11 +773,11 @@ export const StudentPortal: React.FC = () => {
             <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
               <div className="flex justify-between items-center text-xs mb-2">
                 <span className="font-semibold text-slate-300">Skill Alignment Coverage</span>
-                <span className="font-bold text-indigo-400 font-mono text-sm">{skillGaps.coverage_percentage}%</span>
+                <span className="font-bold text-emerald-400 font-mono text-sm">{skillGaps.coverage_percentage}%</span>
               </div>
               <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-teal-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
                   style={{ width: `${skillGaps.coverage_percentage}%` }}
                 />
               </div>
@@ -577,7 +840,7 @@ export const StudentPortal: React.FC = () => {
               <ul className="space-y-2 text-xs text-slate-300">
                 {skillGaps.actionable_next_steps.map((step, i) => (
                   <li key={i} className="flex items-start space-x-2">
-                    <ArrowRight className="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
                     <span>{step}</span>
                   </li>
                 ))}

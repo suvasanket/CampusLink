@@ -24,6 +24,7 @@ class AssessmentData(BaseModel):
 class StudentProfile(BaseModel):
     id: str
     name: str
+    email: Optional[str] = None
     branch: str
     graduation_year: Optional[int] = 2027
     cgpa: float = Field(..., ge=0.0, le=10.0)
@@ -37,6 +38,18 @@ class StudentProfile(BaseModel):
     institution_id: Optional[str] = "inst-001"
 
     model_config = ConfigDict(from_attributes=True)
+
+class StudentRegisterRequest(StudentProfile):
+    password: str = Field(..., min_length=4, max_length=100)
+
+class StudentLoginRequest(BaseModel):
+    identifier: str = Field(..., description="Student ID or registered email")
+    password: str = Field(..., min_length=1)
+
+class StudentLoginResponse(BaseModel):
+    student: StudentProfile
+    token: str
+    message: str = "Student authenticated successfully"
 
 # --- Job Sub-Schemas ---
 class JobRequirements(BaseModel):
@@ -148,11 +161,22 @@ class ApplicationResponse(BaseModel):
 class InstitutionCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=150)
     username: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-zA-Z0-9_-]+$")
+    password: str = Field(default="admin123", min_length=4, max_length=100)
     code: Optional[str] = None
     location: Optional[str] = None
     contact_email: Optional[str] = None
     admin_name: Optional[str] = None
     website: Optional[str] = None
+
+class InstitutionLoginRequest(BaseModel):
+    identifier: Optional[str] = None
+    username: Optional[str] = None
+    password: str = Field(..., min_length=1)
+
+class InstitutionLoginResponse(BaseModel):
+    institution: "InstitutionResponse"
+    token: str
+    message: str = "Institution administrator authenticated successfully"
 
 class InstitutionResponse(BaseModel):
     id: str

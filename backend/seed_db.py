@@ -10,6 +10,7 @@ if backend_dir not in sys.path:
 
 from app.db.session import init_db, SessionLocal, active_db_type
 from app.models.entities import Student, Job, Institution, Company, Recruiter
+from app.core.security import hash_password
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("campuslink.seed")
@@ -26,6 +27,7 @@ def seed_database():
     db = SessionLocal()
     try:
         # 1. Seed Institution Multi-Tenant Profiles
+        default_admin_hash = hash_password("admin123")
         institutions_to_seed = [
             {
                 "id": "inst-001",
@@ -36,6 +38,7 @@ def seed_database():
                 "contact_email": "placements@apex.edu",
                 "admin_name": "Dr. K. S. Sharma",
                 "website": "https://apex.edu",
+                "password_hash": default_admin_hash,
                 "is_verified": True
             },
             {
@@ -47,6 +50,7 @@ def seed_database():
                 "contact_email": "placements@nit.edu",
                 "admin_name": "Prof. Anand Rao",
                 "website": "https://nitk.ac.in",
+                "password_hash": default_admin_hash,
                 "is_verified": True
             }
         ]
@@ -61,6 +65,8 @@ def seed_database():
                 existing_inst.name = inst_data["name"]
                 existing_inst.contact_email = inst_data["contact_email"]
                 existing_inst.admin_name = inst_data["admin_name"]
+                if not existing_inst.password_hash:
+                    existing_inst.password_hash = default_admin_hash
 
         # Seed Sample Recruiters
         recruiters_to_seed = [
@@ -140,9 +146,12 @@ def seed_database():
             with open(students_file, "r", encoding="utf-8") as f:
                 students_data = json.load(f)
             
+            default_student_hash = hash_password("student123")
             students_added = 0
             for item in students_data:
-                existing_student = db.query(Student).filter(Student.id == item["id"]).first()
+                stu_id = item["id"]
+                default_email = f"{stu_id.lower()}@apex.edu"
+                existing_student = db.query(Student).filter(Student.id == stu_id).first()
                 if not existing_student:
                     # Calculate baseline readiness score if absent
                     assessment = item.get("assessment", {})
@@ -171,8 +180,10 @@ def seed_database():
                         tier = "Not Ready"
 
                     student = Student(
-                        id=item["id"],
+                        id=stu_id,
                         name=item["name"],
+                        email=item.get("email", default_email),
+                        password_hash=default_student_hash,
                         branch=item["branch"],
                         graduation_year=item.get("graduation_year", 2027),
                         cgpa=cgpa_val,
@@ -187,7 +198,12 @@ def seed_database():
                     )
                     db.add(student)
                     students_added += 1
-            logger.info(f"Seeded {students_added} new students (Total in file: {len(students_data)})")
+                else:
+                    if not existing_student.password_hash:
+                        existing_student.password_hash = default_student_hash
+                    if not existing_student.email:
+                        existing_student.email = default_email
+            logger.info(f"Seeded/updated {len(students_data)} students (new added: {students_added})")
 
         db.commit()
         logger.info(f"Database seeding completed successfully on active {active_db_type} database!")

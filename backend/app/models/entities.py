@@ -18,6 +18,10 @@ class Student(Base):
     certifications = Column(JSON, nullable=True, default=list)  # list of {title, issuer, year}
     assessment = Column(JSON, nullable=False, default=dict)  # {aptitude, technical, communication}
     
+    # Credentials & Contact
+    email = Column(String(100), nullable=True, index=True)
+    password_hash = Column(String(255), nullable=True)
+
     # Precomputed / cached readiness metrics
     readiness_score = Column(Float, nullable=True)
     readiness_tier = Column(String(50), nullable=True)
@@ -64,6 +68,7 @@ class Institution(Base):
     contact_email = Column(String(100), nullable=True)
     admin_name = Column(String(100), nullable=True)
     website = Column(String(150), nullable=True)
+    password_hash = Column(String(255), nullable=True)
     is_verified = Column(Boolean, default=True)  # Reserved for future OTP activation
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

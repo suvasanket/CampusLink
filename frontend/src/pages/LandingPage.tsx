@@ -8,6 +8,8 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [usernameInput, setUsernameInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -26,151 +28,278 @@ export const LandingPage: React.FC = () => {
       setLoginError('Please enter your college username or code.');
       return;
     }
+    if (!passwordInput) {
+      setLoginError('Please enter your Institution Admin Password.');
+      return;
+    }
 
     try {
       setLoggingIn(true);
       setLoginError(null);
       const cleanSlug = usernameInput.trim().toLowerCase();
-      const institution = await api.getInstitution(cleanSlug);
+      const authRes = await api.loginInstitution(cleanSlug, passwordInput);
 
-      if (institution) {
-        authService.setLoggedInInstitution(institution);
-        navigate(`/${institution.username || institution.id}`);
+      if (authRes && authRes.institution) {
+        authService.setLoggedInInstitution(authRes.institution, authRes.token);
+        navigate(`/${authRes.institution.username || authRes.institution.id}`);
       } else {
-        setLoginError(`No institution found with username '@${cleanSlug}'. Please verify or register.`);
+        setLoginError('Authentication failed. Please verify credentials.');
       }
     } catch (err: any) {
-      setLoginError(err.message || `Institution '@${usernameInput.trim()}' not found. Please register your college.`);
+      setLoginError(err.message || 'Invalid administrator password or username.');
     } finally {
       setLoggingIn(false);
     }
   };
 
   const handleQuickDemoLogin = async (slug: string) => {
+    setUsernameInput(slug);
+    setPasswordInput('admin123');
     try {
       setLoggingIn(true);
       setLoginError(null);
-      const institution = await api.getInstitution(slug);
-      if (institution) {
-        authService.setLoggedInInstitution(institution);
-        navigate(`/${institution.username || institution.id}`);
+      const authRes = await api.loginInstitution(slug, 'admin123');
+      if (authRes && authRes.institution) {
+        authService.setLoggedInInstitution(authRes.institution, authRes.token);
+        navigate(`/${authRes.institution.username || authRes.institution.id}`);
       }
     } catch (err: any) {
-      setLoginError(`Demo college '${slug}' not seeded. Please register.`);
+      setLoginError(err.message || `Demo college '${slug}' failed authentication.`);
     } finally {
       setLoggingIn(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto py-12 px-4 sm:px-6 animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-60 h-60 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Header */}
-        <div className="text-center pb-6 border-b border-slate-800">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 mx-auto flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 mb-4">
-            <Building2 className="w-6 h-6" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Institution Portal Login
-          </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-2 max-w-sm mx-auto leading-relaxed">
-            Enter your college username to access your secure university placement dashboard and cohort intelligence.
-          </p>
-        </div>
-
-        {/* Security / Privacy Assurance */}
-        <div className="mt-6 p-4 rounded-xl bg-slate-950/70 border border-slate-800 flex items-start space-x-3 text-left">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-          <div className="text-xs text-slate-300">
-            <span className="font-semibold text-emerald-300">Tenant Isolation Enforced:</span> Each institution's student cohort, placement drives, and analytics are isolated and strictly inaccessible to other colleges.
-          </div>
-        </div>
-
-        {loginError && (
-          <div className="mt-4 p-3 rounded-xl bg-red-950/40 border border-red-800 text-red-300 text-xs flex items-center space-x-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />
-            <span>{loginError}</span>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="mt-6 space-y-5 text-left">
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-              Registered College Username or ID
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-2.5 text-slate-400 font-mono text-sm">@</span>
-              <input
-                type="text"
-                required
-                placeholder="e.g. apex-inst or national-tech"
-                value={usernameInput}
-                onChange={e => setUsernameInput(e.target.value)}
-                className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-100 font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+    <div className="max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Column: Platform Briefing & Live Demo Nodes */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-xs font-mono uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
+              <span>Multi-Tenant Placement Intelligence Monolith</span>
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">
-              Your college dashboard will open at: <span className="font-mono text-indigo-400">/{usernameInput.trim().toLowerCase() || '&lt;username&gt;'}</span>
+
+            <h1 className="text-3xl sm:text-5xl font-display font-extrabold text-white tracking-tight leading-[1.1]">
+              Deterministic Campus Cohort Intelligence
+            </h1>
+
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+              Equip university placement cells and visiting corporate recruiters with mathematical eligibility validation, 6-factor candidate scoring, and token-free semantic matching.
+            </p>
+          </div>
+
+          {/* Core Architectural Pillars */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+            <div className="p-4 rounded-2xl bg-[#0e111a] border border-white/[0.08] space-y-1.5 shadow-sm">
+              <div className="font-mono text-[10px] text-emerald-400 uppercase tracking-widest font-semibold">01 // EFFICIENCY</div>
+              <div className="font-display font-bold text-white text-sm">0 API Tokens</div>
+              <p className="text-[11px] text-slate-400 leading-normal">Candidate matching runs on local SentenceTransformers.</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#0e111a] border border-white/[0.08] space-y-1.5 shadow-sm">
+              <div className="font-mono text-[10px] text-emerald-400 uppercase tracking-widest font-semibold">02 // DETERMINISM</div>
+              <div className="font-display font-bold text-white text-sm">6-Factor Score</div>
+              <p className="text-[11px] text-slate-400 leading-normal">CGPA, skills, projects, and assessments scored deterministically.</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#0e111a] border border-white/[0.08] space-y-1.5 shadow-sm">
+              <div className="font-mono text-[10px] text-emerald-400 uppercase tracking-widest font-semibold">03 // ISOLATION</div>
+              <div className="font-display font-bold text-white text-sm">Tenant Scoped</div>
+              <p className="text-[11px] text-slate-400 leading-normal">Strict campus cohort data separation across each registered college.</p>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loggingIn}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
-          >
-            {loggingIn ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Verifying Institution...</span>
-              </>
-            ) : (
-              <>
-                <LogIn className="w-4 h-4" />
-                <span>Log In to Institution Dashboard</span>
-              </>
+          {/* Seeded Campus Nodes Fast-Track */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#0e111a] border border-white/[0.08] shadow-[0_15px_35px_-15px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.06)] space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="font-mono text-xs uppercase tracking-wider text-slate-300 font-semibold flex items-center space-x-2">
+                <Building2 className="w-4 h-4 text-emerald-400" />
+                <span>Active Campus Environments</span>
+              </div>
+              <span className="font-mono text-[11px] text-slate-400">Click to load session</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleQuickDemoLogin('apex-inst')}
+                disabled={loggingIn}
+                className="p-4 rounded-2xl bg-[#121622] border border-white/[0.06] hover:border-emerald-500/40 text-left transition-all duration-200 group active:scale-[0.98] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono text-xs font-semibold text-emerald-300">@apex-inst</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  </div>
+                  <div className="font-display font-bold text-white text-sm group-hover:text-emerald-200 transition-colors">
+                    Apex Institute of Technology
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-1">Bangalore Campus • 30+ Enrolled Students • 6 Active Drives</div>
+                </div>
+                <div className="mt-3 flex items-center space-x-1 font-mono text-[11px] text-emerald-400 group-hover:translate-x-1 transition-transform">
+                  <span>Enter Apex Console</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickDemoLogin('national-tech')}
+                disabled={loggingIn}
+                className="p-4 rounded-2xl bg-[#121622] border border-white/[0.06] hover:border-emerald-500/40 text-left transition-all duration-200 group active:scale-[0.98] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono text-xs font-semibold text-emerald-300">@national-tech</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  </div>
+                  <div className="font-display font-bold text-white text-sm group-hover:text-emerald-200 transition-colors">
+                    National Institute of Technology
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-1">Surathkal Campus • Engineering & Science Division</div>
+                </div>
+                <div className="mt-3 flex items-center space-x-1 font-mono text-[11px] text-emerald-400 group-hover:translate-x-1 transition-transform">
+                  <span>Enter NIT Console</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Spacious Authentication Deck */}
+        <div className="lg:col-span-5">
+          <div className="bg-[#0e111a] border border-white/[0.08] rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.08)] space-y-6 relative overflow-hidden">
+            
+            {/* Top ambient hairline */}
+            <div className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+
+            {/* Header */}
+            <div className="space-y-1.5">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-semibold flex items-center space-x-1.5">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Enterprise Authentication Gateway</span>
+              </div>
+              <h2 className="text-2xl font-display font-bold text-white tracking-tight">
+                Institution Portal Access
+              </h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Authenticate with your university identifier to access your dedicated placement cockpit.
+              </p>
+            </div>
+
+            {/* Security Note */}
+            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-start space-x-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <p className="text-[11.5px] text-slate-300 leading-normal">
+                <strong className="text-white font-medium">Isolated Workspace:</strong> Verified institutions receive a distinct tenant scope preserving candidate privacy.
+              </p>
+            </div>
+
+            {loginError && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{loginError}</span>
+              </div>
             )}
-          </button>
-        </form>
 
-        {/* Demo Fast-Track Options */}
-        <div className="mt-6 pt-5 border-t border-slate-800 text-center">
-          <div className="text-xs text-slate-400 mb-2">Instant Demo Session:</div>
-          <div className="flex items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickDemoLogin('apex-inst')}
-              disabled={loggingIn}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-indigo-300 border border-slate-700 font-mono"
-            >
-              Demo: @apex-inst
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemoLogin('national-tech')}
-              disabled={loggingIn}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-violet-300 border border-slate-700 font-mono"
-            >
-              Demo: @national-tech
-            </button>
+            {/* Form */}
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider">
+                  College Username or Slug *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3 text-slate-400 font-mono text-sm">@</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. apex-inst or national-tech"
+                    value={usernameInput}
+                    onChange={e => setUsernameInput(e.target.value)}
+                    className="w-full bg-[#121622] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl pl-8 pr-4 py-2.5 text-sm text-white font-mono placeholder-slate-500 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider">
+                    Admin Access Password *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300"
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Admin password (demo: admin123)"
+                    value={passwordInput}
+                    onChange={e => setPasswordInput(e.target.value)}
+                    className="w-full bg-[#121622] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white font-mono placeholder-slate-500 focus:outline-none transition-colors"
+                  />
+                </div>
+                <div className="font-mono text-[10.5px] text-slate-400">
+                  Target Console: <span className="text-emerald-300">/{usernameInput.trim().toLowerCase() || '<username>'}</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loggingIn}
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 font-display font-semibold text-sm shadow-[0_0_20px_rgba(16,185,129,0.15)] flex items-center justify-center space-x-2 transition-all active:scale-[0.98] disabled:opacity-50"
+              >
+                {loggingIn ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-emerald-300/30 border-t-emerald-300 rounded-full animate-spin" />
+                    <span>Verifying Admin Credentials...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4 text-emerald-400" />
+                    <span>Authenticate & Open Admin Dashboard</span>
+                    <ArrowRight className="w-4 h-4 text-emerald-400" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Candidate & Registration CTAs */}
+            <div className="pt-4 border-t border-white/[0.06] space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Are you an enrolled student?</span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/${usernameInput.trim().toLowerCase() || 'apex-inst'}/student-login`)}
+                  className="font-mono text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  Candidate Login →
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">New university placement cell?</span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/register')}
+                  className="font-mono text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+                >
+                  Register College Workspace →
+                </button>
+              </div>
+            </div>
+
           </div>
-        </div>
-
-        {/* Registration CTA for New Colleges */}
-        <div className="mt-6 pt-5 border-t border-slate-800 text-center">
-          <p className="text-xs text-slate-400">
-            Has your college not registered on CampusLink yet?
-          </p>
-          <button
-            onClick={() => navigate('/register')}
-            className="mt-2 text-xs font-semibold text-indigo-400 hover:text-indigo-300 underline inline-flex items-center space-x-1"
-          >
-            <span>Register Your College or University →</span>
-          </button>
         </div>
 
       </div>

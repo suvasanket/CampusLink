@@ -5,6 +5,7 @@ import { JobRequirements, JobMatchResult, CandidateMatchItem, ApplicationRecord,
 import { CandidateCard } from '../components/CandidateCard';
 import { CandidateModal } from '../components/CandidateModal';
 import { Briefcase, Filter, Search, Users, Sparkles, AlertCircle, RefreshCw, Star, Download, Sliders, PlusCircle, ArrowLeft } from 'lucide-react';
+import { authService } from '../services/auth';
 
 export const RecruiterPortal: React.FC = () => {
   const { institutionId, recruiterId } = useParams<{ institutionId?: string; recruiterId?: string }>();
@@ -217,12 +218,21 @@ export const RecruiterPortal: React.FC = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
                 <span>Deterministic Candidate Matching Engine</span>
               </span>
-              <button
-                onClick={() => navigate(`/${institution?.username || activeInst}`)}
-                className="font-mono text-xs text-slate-400 hover:text-emerald-300 transition-colors flex items-center space-x-1"
-              >
-                <span>← {institution?.name || 'Campus Control Desk'}</span>
-              </button>
+              {authService.isInstitutionAdmin(activeInst) ? (
+                <button
+                  onClick={() => navigate(`/${institution?.username || activeInst}`)}
+                  className="font-mono text-xs text-slate-400 hover:text-emerald-300 transition-colors flex items-center space-x-1"
+                >
+                  <span>← Return to Admin Console</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/')}
+                  className="font-mono text-xs text-slate-400 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>← Return to Global Gateway</span>
+                </button>
+              )}
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight leading-tight">

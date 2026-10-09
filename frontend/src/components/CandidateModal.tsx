@@ -25,7 +25,7 @@ export const CandidateModal: React.FC<CandidateModalProps> = ({ candidate, onClo
     { label: 'Technical Skills Overlap', score: breakdown.skills, weight: '40%', barGradient: 'from-emerald-500 to-teal-400' },
     { label: 'Semantic Project Alignment', score: breakdown.projects, weight: '20%', barGradient: 'from-sky-500 to-cyan-400' },
     { label: 'Academic Standing (CGPA)', score: breakdown.academics, weight: '15%', barGradient: 'from-emerald-400 to-green-500' },
-    { label: 'Standardized Assessment', score: breakdown.assessment, weight: '10%', barGradient: 'from-indigo-400 to-sky-400' },
+    { label: 'Standardized Assessment', score: breakdown.assessment, weight: '10%', barGradient: 'from-teal-400 to-emerald-400' },
     { label: 'Professional Certifications', score: breakdown.certifications, weight: '10%', barGradient: 'from-amber-400 to-amber-500' },
     { label: 'Professional Communication', score: breakdown.communication, weight: '5%', barGradient: 'from-rose-400 to-pink-400' },
   ];

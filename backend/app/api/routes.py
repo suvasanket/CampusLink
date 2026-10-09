@@ -9,6 +9,9 @@ from app.core.config import settings
 from app.models.entities import Student, Job, MatchRecord, Institution, Company, Application, Recruiter
 from app.schemas.entities import (
     StudentProfile,
+    StudentRegisterRequest,
+    StudentLoginRequest,
+    StudentLoginResponse,
     JobRequirements,
     JobParseRequest,
     JobMatchResult,
@@ -19,9 +22,12 @@ from app.schemas.entities import (
     ApplicationResponse,
     InstitutionCreate,
     InstitutionResponse,
+    InstitutionLoginRequest,
+    InstitutionLoginResponse,
     RecruiterCreate,
     RecruiterResponse
 )
+from app.core.security import hash_password, verify_password
 from app.services.matching import match_candidates_for_job
 from app.services.recommendations import compute_student_readiness, compute_skill_gaps
 
@@ -386,6 +392,7 @@ def register_institution(inst_in: InstitutionCreate, db: Session = Depends(get_d
         id=inst_id,
         username=clean_slug,
         name=inst_in.name.strip(),
+        password_hash=hash_password(inst_in.password or "admin123"),
         code=inst_in.code.strip() if inst_in.code else clean_slug.upper()[:6],
         location=inst_in.location,
         contact_email=inst_in.contact_email,
@@ -410,6 +417,70 @@ def register_institution(inst_in: InstitutionCreate, db: Session = Depends(get_d
         created_at=new_inst.created_at.isoformat() if new_inst.created_at else None,
         total_students=0,
         total_jobs=0
+    )
+
+@router.post("/institutions/{identifier}/login", response_model=InstitutionLoginResponse, tags=["Institution"])
+@router.post("/institutions/login", response_model=InstitutionLoginResponse, tags=["Institution"])
+def login_institution(
+    login_data: InstitutionLoginRequest,
+    identifier: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Authenticate an institution administrator with password.
+    Secures the institution dashboard from unauthorized access.
+    """
+    target_ident = identifier or login_data.identifier or login_data.username
+    if not target_ident:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="College identifier or username is required."
+        )
+
+    inst = resolve_institution(target_ident, db)
+    valid = False
+    if inst.password_hash:
+        valid = verify_password(login_data.password, inst.password_hash)
+    else:
+        # Legacy fallback if password_hash was null: accept default admin123 and update hash
+        if login_data.password in ["admin123", "password", "admin"]:
+            inst.password_hash = hash_password(login_data.password)
+            db.commit()
+            valid = True
+
+    if not valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid institution administrator password."
+        )
+
+    is_default = inst.id in ["inst-001", "apex-inst"]
+    stu_count = db.query(Student).filter(
+        (Student.institution_id == inst.id) | (Student.institution_id.is_(None) if is_default else False)
+    ).count()
+    job_count = db.query(Job).filter(
+        (Job.institution_id == inst.id) | (Job.institution_id.is_(None) if is_default else False)
+    ).count()
+
+    inst_resp = InstitutionResponse(
+        id=inst.id,
+        username=inst.username or inst.id,
+        name=inst.name,
+        code=inst.code,
+        location=inst.location,
+        contact_email=inst.contact_email,
+        admin_name=inst.admin_name,
+        website=inst.website,
+        is_verified=inst.is_verified,
+        created_at=inst.created_at.isoformat() if inst.created_at else None,
+        total_students=stu_count,
+        total_jobs=job_count
+    )
+
+    return InstitutionLoginResponse(
+        institution=inst_resp,
+        token=f"INST-AUTH-{uuid.uuid4().hex[:12]}",
+        message="Institution administrator authenticated successfully."
     )
 
 @router.get("/institutions/{identifier}", response_model=InstitutionResponse, tags=["Institution"])
@@ -526,19 +597,43 @@ def list_institution_students(
     return query.all()
 
 @router.post("/institutions/{identifier}/students", response_model=StudentProfile, status_code=status.HTTP_201_CREATED, tags=["Institution"])
-def register_institution_student(identifier: str, student_in: StudentProfile, db: Session = Depends(get_db)):
-    """Register a student under a specific college."""
+def register_institution_student(identifier: str, student_in: Dict[str, Any], db: Session = Depends(get_db)):
+    """
+    Register a student profile under a specific college with password security.
+    """
     inst = resolve_institution(identifier, db)
-    existing = db.query(Student).filter(Student.id == student_in.id).first()
+    stu_id = student_in.get("id", "").strip()
+    if not stu_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Student ID / Roll Number is required."
+        )
+
+    existing = db.query(Student).filter(Student.id == stu_id).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Student ID / Roll Number '{student_in.id}' is already registered."
+            detail=f"Student ID / Roll Number '{stu_id}' is already registered."
         )
     
-    student_data = student_in.model_dump()
-    student_data["institution_id"] = inst.id
+    # Check email duplicate if provided
+    stu_email = student_in.get("email", "").strip() if student_in.get("email") else None
+    if stu_email:
+        existing_email = db.query(Student).filter(Student.email.ilike(stu_email)).first()
+        if existing_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Student email '{stu_email}' is already registered."
+            )
 
+    student_data = dict(student_in)
+    raw_password = student_data.pop("password", None) or "student123"
+    student_data["institution_id"] = inst.id
+    student_data["password_hash"] = hash_password(raw_password)
+    if stu_email:
+        student_data["email"] = stu_email
+
+    # Extract or validate with StudentProfile contract
     student = Student(**student_data)
     # Precompute readiness
     readiness_calc = compute_student_readiness(student)
@@ -548,7 +643,65 @@ def register_institution_student(identifier: str, student_in: StudentProfile, db
     db.add(student)
     db.commit()
     db.refresh(student)
-    return student
+    return StudentProfile.model_validate(student)
+
+@router.post("/institutions/{identifier}/students/login", response_model=StudentLoginResponse, tags=["Students"])
+@router.post("/students/login", response_model=StudentLoginResponse, tags=["Students"])
+def login_student(
+    login_data: StudentLoginRequest,
+    identifier: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Authenticate a student with their Student ID or Email and password.
+    Ensures no other student or entity can access an unauthorized profile.
+    """
+    target_ident = login_data.identifier.strip()
+    if not target_ident:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Student ID or registered email is required."
+        )
+
+    query = db.query(Student).filter(
+        (Student.id == target_ident) | (Student.email.ilike(target_ident))
+    )
+
+    if identifier:
+        inst = resolve_institution(identifier, db)
+        is_default = inst.id in ["inst-001", "apex-inst"]
+        query = query.filter(
+            (Student.institution_id == inst.id) | (Student.institution_id.is_(None) if is_default else False)
+        )
+
+    student = query.first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"No student profile found for '{target_ident}'. Please verify your Student ID/Email or register."
+        )
+
+    valid = False
+    if student.password_hash:
+        valid = verify_password(login_data.password, student.password_hash)
+    else:
+        # Fallback for unhashed legacy students: accept default student123 and update hash
+        if login_data.password in ["student123", "password", "student"]:
+            student.password_hash = hash_password(login_data.password)
+            db.commit()
+            valid = True
+
+    if not valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid student credentials. Please check your password."
+        )
+
+    return StudentLoginResponse(
+        student=StudentProfile.model_validate(student),
+        token=f"STU-AUTH-{uuid.uuid4().hex[:12]}",
+        message="Student authenticated successfully."
+    )
 
 @router.get("/institutions/{identifier}/recruiters", response_model=List[RecruiterResponse], tags=["Institution"])
 def list_institution_recruiters(identifier: str, db: Session = Depends(get_db)):

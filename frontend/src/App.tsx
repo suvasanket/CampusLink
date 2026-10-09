@@ -9,6 +9,7 @@ import { StudentPortal } from './pages/StudentPortal';
 import { RecruiterRegistrationPage } from './pages/RecruiterRegistrationPage';
 import { RecruiterPortal } from './pages/RecruiterPortal';
 import { JobUploadPage } from './pages/JobUploadPage';
+import { StudentLoginPage } from './pages/StudentLoginPage';
 import { api } from './services/api';
 
 export const App: React.FC = () => {
@@ -27,7 +28,7 @@ export const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+      <div className="min-h-screen flex flex-col bg-[#090A0F] text-slate-100 selection:bg-emerald-500 selection:text-black">
         {/* Universal Top Header with Multi-Tenant Navigation */}
         <Navbar dbType={dbType} />
 
@@ -45,7 +46,10 @@ export const App: React.FC = () => {
             {/* 3. Job Posting */}
             <Route path="/upload-job" element={<JobUploadPage />} />
 
-            {/* 4. Student Registration under Institution */}
+            {/* 4. Student Registration & Login under Institution */}
+            <Route path="/student-login" element={<StudentLoginPage />} />
+            <Route path="/:institutionId/student-login" element={<StudentLoginPage />} />
+            <Route path="/:institutionId/student/login" element={<StudentLoginPage />} />
             <Route path="/:institutionId/student-registration" element={<StudentRegistrationPage />} />
             <Route path="/:institutionId/student/register" element={<StudentRegistrationPage />} />
 

@@ -18,7 +18,14 @@ import {
   UserPlus,
   Sparkles,
   GraduationCap,
-  LogOut
+  LogOut,
+  Lock,
+  ShieldAlert,
+  AlertCircle,
+  KeyRound,
+  LogIn,
+  ArrowRight,
+  ShieldCheck
 } from 'lucide-react';
 
 export const InstitutionPortal: React.FC = () => {
@@ -27,6 +34,15 @@ export const InstitutionPortal: React.FC = () => {
 
   // If no param, default to apex-inst
   const activeIdentifier = institutionId || 'apex-inst';
+
+  // Institution Admin Authentication Gate
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() =>
+    authService.isInstitutionAdmin(activeIdentifier)
+  );
+  const [adminPassword, setAdminPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authenticating, setAuthenticating] = useState<boolean>(false);
 
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [stats, setStats] = useState<InstitutionStats | null>(null);
@@ -42,35 +58,82 @@ export const InstitutionPortal: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState<'student' | 'recruiter' | null>(null);
 
   useEffect(() => {
-    loadData(activeIdentifier);
+    const handleAuthChange = () => {
+      setIsAdminAuthenticated(authService.isInstitutionAdmin(activeIdentifier));
+    };
+    window.addEventListener('campuslink-auth-change', handleAuthChange);
+    return () => {
+      window.removeEventListener('campuslink-auth-change', handleAuthChange);
+    };
   }, [activeIdentifier]);
+
+  useEffect(() => {
+    loadData(activeIdentifier);
+  }, [activeIdentifier, isAdminAuthenticated]);
 
   const loadData = async (identifier: string) => {
     try {
       setLoading(true);
-      const [instRes, statsRes, studentsRes, jobsRes, recruitersRes, appsRes] = await Promise.all([
-        api.getInstitution(identifier).catch(() => null),
-        api.getScopedInstitutionStats(identifier).catch(() => api.getInstitutionStats()),
-        api.getInstitutionStudents(identifier).catch(() => api.getStudents()),
-        api.getInstitutionJobs(identifier).catch(() => api.getJobs()),
-        api.getInstitutionRecruiters(identifier).catch(() => []),
-        api.getApplications()
-      ]);
-
+      // Always load institution info so gate can show institution name
+      const instRes = await api.getInstitution(identifier).catch(() => null);
       if (instRes) {
         setInstitution(instRes);
-        authService.setLoggedInInstitution(instRes);
       }
-      setStats(statsRes);
-      setStudents(studentsRes);
-      setJobs(jobsRes);
-      setRecruiters(recruitersRes);
-      setApplications(appsRes);
+
+      // ONLY fetch confidential cohort records if verified as Institution Admin
+      if (authService.isInstitutionAdmin(identifier)) {
+        setIsAdminAuthenticated(true);
+        const [statsRes, studentsRes, jobsRes, recruitersRes, appsRes] = await Promise.all([
+          api.getScopedInstitutionStats(identifier).catch(() => api.getInstitutionStats()),
+          api.getInstitutionStudents(identifier).catch(() => api.getStudents()),
+          api.getInstitutionJobs(identifier).catch(() => api.getJobs()),
+          api.getInstitutionRecruiters(identifier).catch(() => []),
+          api.getApplications()
+        ]);
+        setStats(statsRes);
+        setStudents(studentsRes);
+        setJobs(jobsRes);
+        setRecruiters(recruitersRes);
+        setApplications(appsRes);
+      } else {
+        setIsAdminAuthenticated(false);
+      }
     } catch (err) {
       console.error('Failed to load institution portal data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminPassword.trim()) {
+      setAuthError('Please enter your institution administrator password.');
+      return;
+    }
+
+    try {
+      setAuthenticating(true);
+      setAuthError(null);
+      const res = await api.loginInstitution(activeIdentifier, adminPassword.trim());
+      if (res && res.institution) {
+        authService.setLoggedInInstitution(res.institution, res.token);
+        setIsAdminAuthenticated(true);
+        setAdminPassword('');
+        await loadData(activeIdentifier);
+      }
+    } catch (err: any) {
+      setAuthError(err.message || 'Invalid administrator password.');
+    } finally {
+      setAuthenticating(false);
+    }
+  };
+
+  const handleLogout = () => {
+    authService.logoutInstitution();
+    setIsAdminAuthenticated(false);
+    setAdminPassword('');
+    navigate(`/${activeIdentifier}`);
   };
 
   const originUrl = typeof window !== 'undefined' ? window.location.origin : '';
@@ -118,6 +181,142 @@ export const InstitutionPortal: React.FC = () => {
     return matchesBranch && matchesSearch;
   });
 
+  if (!isAdminAuthenticated) {
+    return (
+      <div className="max-w-xl mx-auto py-8 sm:py-16 px-4 animate-fadeIn">
+        <div className="rounded-3xl bg-[#0E111A] border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.06)] p-6 sm:p-8 space-y-6">
+          
+          {/* Header */}
+          <div className="space-y-3">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/25 text-xs font-mono uppercase tracking-wider">
+              <Lock className="w-3.5 h-3.5 text-rose-400" />
+              <span>Restricted • Institution Admin Privileges Only</span>
+            </div>
+
+            <div className="flex items-center space-x-3 pt-1">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <Building2 className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h1 className="text-xl font-display font-extrabold text-white">
+                  {institution?.name || activeIdentifier}
+                </h1>
+                <p className="text-xs text-slate-400 font-mono">
+                  Console URL: @{currentInstSlug} {institution?.location ? `• ${institution.location}` : ''}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
+              This placement control desk is confidential. Please enter the master administrator password to unlock cohort rosters, student dossiers, CGPA reports, and company recruitment drives.
+            </p>
+          </div>
+
+          {/* Error Message */}
+          {authError && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center space-x-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{authError}</span>
+            </div>
+          )}
+
+          {/* Password Form */}
+          <form onSubmit={handleAdminLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider">
+                  Admin Master Password *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Enter administrator password (demo: admin123)"
+                  value={adminPassword}
+                  onChange={e => setAdminPassword(e.target.value)}
+                  className="w-full bg-[#121622] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white font-mono placeholder-slate-500 focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-0.5">
+                <span>Demo node password:</span>
+                <button
+                  type="button"
+                  onClick={() => setAdminPassword('admin123')}
+                  className="text-emerald-400 hover:underline"
+                >
+                  Use 'admin123'
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={authenticating}
+              className="w-full py-3.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 font-display font-semibold text-sm shadow-[0_0_20px_rgba(16,185,129,0.15)] flex items-center justify-center space-x-2 transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              {authenticating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-emerald-300/30 border-t-emerald-300 rounded-full animate-spin" />
+                  <span>Verifying Credentials...</span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4 text-emerald-400" />
+                  <span>Unlock Admin Control Console</span>
+                  <ArrowRight className="w-4 h-4 text-emerald-400" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Alternate Roles */}
+          <div className="pt-4 border-t border-white/[0.06] space-y-2.5">
+            <div className="text-[11.5px] text-slate-400 text-center font-mono">
+              Not the institution administrator?
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => navigate(`/${currentInstSlug}/student-login`)}
+                className="p-2.5 rounded-xl bg-[#121622] hover:bg-white/[0.04] border border-white/[0.06] text-left text-xs text-slate-300 hover:text-emerald-300 transition-colors flex items-center space-x-2"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Student Login</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/${currentInstSlug}/recruiter-registration`)}
+                className="p-2.5 rounded-xl bg-[#121622] hover:bg-white/[0.04] border border-white/[0.06] text-left text-xs text-slate-300 hover:text-emerald-300 transition-colors flex items-center space-x-2"
+              >
+                <Briefcase className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <span>Recruiter Gateway</span>
+              </button>
+            </div>
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="font-mono text-xs text-slate-400 hover:text-white transition-colors"
+              >
+                ← Return to Global Home
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fadeIn">
       
@@ -127,9 +326,9 @@ export const InstitutionPortal: React.FC = () => {
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="max-w-2xl space-y-3">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/[0.04] text-emerald-300 text-xs font-mono border border-emerald-500/30">
-              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{institution?.code ? `${institution.code} // ` : ''}Campus Intelligence Monolith</span>
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 text-xs font-mono border border-emerald-500/30">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Admin Verified: {institution?.admin_name || 'Placement Cell Officer'}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight leading-tight">
               {institution?.name || 'Campus Cohort Placement Intelligence'}
@@ -143,14 +342,11 @@ export const InstitutionPortal: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
             <button
-              onClick={() => {
-                authService.logout();
-                navigate('/');
-              }}
+              onClick={handleLogout}
               className="px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-rose-500/10 text-xs font-semibold text-slate-300 hover:text-rose-300 border border-white/[0.08] hover:border-rose-500/30 flex items-center space-x-2 transition-all shadow-sm active:scale-[0.98]"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Exit Institution Session</span>
+              <span>Lock Console & Log Out</span>
             </button>
           </div>
         </div>

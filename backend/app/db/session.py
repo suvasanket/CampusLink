@@ -53,7 +53,31 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 def init_db():
-    """Create all tables in the active database engine."""
+    """Create all tables in the active database engine and ensure new columns exist."""
     logger.info(f"Creating database tables on active {active_db_type} engine...")
     Base.metadata.create_all(bind=engine)
+    
+    try:
+        from sqlalchemy import inspect
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        
+        with engine.begin() as conn:
+            if "institutions" in tables:
+                inst_cols = [c["name"] for c in inspector.get_columns("institutions")]
+                if "password_hash" not in inst_cols:
+                    logger.info("Adding missing password_hash column to institutions...")
+                    conn.execute(text("ALTER TABLE institutions ADD COLUMN password_hash VARCHAR(255)"))
+
+            if "students" in tables:
+                stu_cols = [c["name"] for c in inspector.get_columns("students")]
+                if "email" not in stu_cols:
+                    logger.info("Adding missing email column to students...")
+                    conn.execute(text("ALTER TABLE students ADD COLUMN email VARCHAR(100)"))
+                if "password_hash" not in stu_cols:
+                    logger.info("Adding missing password_hash column to students...")
+                    conn.execute(text("ALTER TABLE students ADD COLUMN password_hash VARCHAR(255)"))
+    except Exception as e:
+        logger.warning(f"Column migration check notice: {e}")
+
     logger.info("Database tables verified.")

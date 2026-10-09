@@ -8,6 +8,9 @@ import {
   ApplicationRecord,
   Institution,
   InstitutionCreateData,
+  InstitutionLoginResponse,
+  StudentRegisterData,
+  StudentLoginResponse,
   Recruiter,
   RecruiterCreateData,
   RecruiterDetailResponse
@@ -44,6 +47,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data)
     }),
+  loginInstitution: (identifier: string, password: string) =>
+    fetchJson<InstitutionLoginResponse>(`/institutions/${encodeURIComponent(identifier)}/login`, {
+      method: 'POST',
+      body: JSON.stringify({ identifier, password })
+    }),
   getScopedInstitutionStats: (identifier: string) =>
     fetchJson<InstitutionStats>(`/institutions/${identifier}/stats`),
   getInstitutionStudents: (identifier: string, branch?: string, minCgpa?: number) => {
@@ -53,10 +61,15 @@ export const api = {
     const query = q.toString() ? `?${q.toString()}` : '';
     return fetchJson<StudentProfile[]>(`/institutions/${identifier}/students${query}`);
   },
-  registerStudent: (identifier: string, student: StudentProfile) =>
+  registerStudent: (identifier: string, student: StudentProfile | StudentRegisterData) =>
     fetchJson<StudentProfile>(`/institutions/${identifier}/students`, {
       method: 'POST',
       body: JSON.stringify(student)
+    }),
+  loginStudent: (identifier: string, studentIdentifier: string, password: string) =>
+    fetchJson<StudentLoginResponse>(`/institutions/${encodeURIComponent(identifier)}/students/login`, {
+      method: 'POST',
+      body: JSON.stringify({ identifier: studentIdentifier, password })
     }),
   getInstitutionRecruiters: (identifier: string) =>
     fetchJson<Recruiter[]>(`/institutions/${identifier}/recruiters`),
